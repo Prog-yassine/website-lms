@@ -1,67 +1,82 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ReactComponent as ChevronDown } from '../assets/icons/chevron-down.svg';
-import { ReactComponent as School } from '../assets/icons/school.svg';
 
 const plans = [
-  {
-    name: "Free",
-    price: "$0/month",
-    description: "Basic features for personal projects.",
-  },
-  {
-    name: "Pro",
-    price: "$10/month",
-    description: "Advanced tools for growing teams.",
-  },
-  {
-    name: "Enterprise",
-    price: "Custom pricing",
-    description: "Tailored solutions for large organizations.",
-  },
+  { name: "Free", price: "$0/month", description: "Basic features for personal projects." },
+  { name: "Pro", price: "$10/month", description: "Advanced tools for growing teams." }
 ];
 
 const types = [
-  {
-    name: "Individuals",
-    icon: "👤",
-    description: "For solo developers and freelancers.",
-  },
-  {
-    name: "Educational",
-    icon: "🎓",
-    description: "Universities, schools, or academic use.",
-  },
-  {
-    name: "Companies",
-    icon: "🏢",
-    description: "Small businesses or corporations.",
-  },
-  {
-    name: "Government",
-    icon: "🏛️",
-    description: "State and public sector organizations.",
-  },
-  {
-    name: "Nonprofit",
-    icon: "🤝",
-    description: "NGOs and nonprofit teams.",
-  },
+  { name: "Individuals", icon: "👤", description: "For solo developers and freelancers." },
+  { name: "Educational", icon: "🎓", description: "Universities, schools, or academic use." },
+  { name: "Companies", icon: "🏢", description: "Small businesses or corporations." },
+  { name: "Government", icon: "🏛️", description: "State and public sector organizations." },
+  { name: "Nonprofit", icon: "🤝", description: "NGOs and nonprofit teams." }
 ];
 
 const NewOrganization = () => {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [plan, setPlan] = useState(plans[0]);
   const [planOpen, setPlanOpen] = useState(false);
 
   const [type, setType] = useState(types[0]);
   const [typeOpen, setTypeOpen] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      setError("Please enter an organization name.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token"); // JWT stocké côté client
+
+      const res = await fetch("http://localhost:5000/api/organization/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // ton middleware verifyToken
+        },
+        body: JSON.stringify({
+          name,
+          type: type.name,
+          plan: plan.name,
+          root: "root-uuid-ou-id" // remplace par l’ID/UUID réel du root user
+        }),
+      });
+
+      if (!res.ok) throw new Error("Error while creating organization");
+
+      const data = await res.json();
+      setSuccess("✅ Organization created successfully!");
+
+      // Redirection après 1.5 sec
+      setTimeout(() => {
+        navigate(`/dashboard/division/new/${data.uuid}`);
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setError("❌ Unable to create the organization.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-100 w-full ">
       <div className="w-full bg-white shadow px-6 py-4 flex items-center justify-start sticky top-0 z-10 space-x-4">
-        <img src="../../logo.svg" className="w-8 h-8" />
+        <img src="../../logo.svg" className="w-8 h-8" alt="Logo" />
         <div className="text-xl font-semibold text-gray-400">/</div>
         <div className="text-xl font-semibold">New Organization</div>
       </div>
@@ -86,13 +101,15 @@ const NewOrganization = () => {
                   <input
                     type="text"
                     placeholder="Organization name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <p className="text-sm text-gray-500 mt-1">What's the name of your company or team?</p>
                 </div>
               </div>
 
-              {/* Type Selector (Custom Dropdown) */}
+              {/* Type Selector */}
               <div className="flex items-start gap-4 relative">
                 <label className="w-1/4 pt-2 text-sm font-medium text-gray-700">Type</label>
                 <div className="w-3/4 relative">
@@ -133,7 +150,7 @@ const NewOrganization = () => {
                 </div>
               </div>
 
-              {/* Plan Selector (Already Custom) */}
+              {/* Plan Selector */}
               <div className="flex items-start gap-4 relative">
                 <label className="w-1/4 pt-2 text-sm font-medium">
                   <h1 className="text-gray-700">Plan</h1>
@@ -174,15 +191,26 @@ const NewOrganization = () => {
               </div>
             </div>
 
-            {/* Footer Buttons */}
+            {/* Messages */}
+            {error && <p className="text-red-500 px-6">{error}</p>}
+            {success && <p className="text-green-600 px-6">{success}</p>}
+
+            {/* Footer */}
             <div className="flex justify-between items-center mt-6 border-t border-gray-300 pt-4 px-6">
-              <button className="border-gray-300 rounded-lg border py-2 px-4 cursor-pointer" onClick={() => navigate('/dashboard/org')}>Cancel</button>
               <button
-                type="submit"
-                className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                onClick={() => navigate('/dashboard/division/new/qzodjhnqioudzquid')}
+                className="border-gray-300 rounded-lg border py-2 px-4 cursor-pointer"
+                onClick={() => navigate('/dashboard/org')}
+                disabled={loading}
               >
-                Create Organization
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Organization"}
               </button>
             </div>
           </div>

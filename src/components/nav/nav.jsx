@@ -35,6 +35,7 @@ const NavBar = () => {
           </button>
           <button
             className="text-xs sm:text-sm md:text-base font-semibold px-4 h-[40px] md:h-[46px] bg-[#65D9A5] text-black rounded-[12px] transition border border-[#22C55E] hover:border-[#00802F] cursor-pointer"
+            onClick={() => navigate('/login')}
           >
             Start your project
           </button>

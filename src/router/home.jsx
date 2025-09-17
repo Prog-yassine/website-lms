@@ -30,7 +30,7 @@ const Home = () => {
         
         {/* Hero Section */}
         <div className="w-full flex flex-col items-center justify-center mt-10 sm:mt-20">
-          <div className="w-full max-w-md sm:max-w-2xl flex flex-col sm:flex-row items-center justify-between bg-white rounded-full px-4 py-2 space-y-2 sm:space-y-0 sm:space-x-4">
+          <div className="w-full max-w-md sm:max-w-2xl flex flex-col sm:flex-row items-center justify-between bg-white rounded-full px-2 py-2 space-y-2 sm:space-y-0 sm:space-x-4 border border-gray-300">
             <div className="flex-1 flex items-center justify-center bg-[#65D9A5]/30 rounded-full h-[34px] border border-[#22C55E] cursor-pointer">
               <p className="font-semibold text-[#22C55E] text-sm sm:text-base">Launch 2025</p>
             </div>

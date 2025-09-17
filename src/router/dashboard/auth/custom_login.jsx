@@ -174,8 +174,10 @@ export default function LoginFormBuilder() {
 
         {/* Border Radius */}
         {!separateRadius[component] ? (
-          <div className="flex items-center gap-2">
-            <label className="whitespace-nowrap">Radius:</label>
+          <div className="flex items-center border border-gray-300 pl-2 rounded-lg gap-2" >
+            <div>
+              <BorderCorners className="w-7 h-7 text-gray-600" />
+            </div>
             <input
               type="number"
               value={c.radius?.all || 0}
@@ -185,7 +187,7 @@ export default function LoginFormBuilder() {
                   all: e.target.value
                 })
               }
-              className="flex-1 border border-gray-300 rounded px-2 py-1"
+              className="flex-1 px-2 h-10 outline-none border-l border-gray-300"
             />
           </div>
         ) : (
@@ -198,7 +200,7 @@ export default function LoginFormBuilder() {
                   {corner === "topRight" && <RadiustopRight className="w-5 h-5 text-gray-600" />}
                   {corner === "bottomLeft" && <RadiusbottomLeft className="w-5 h-5 text-gray-600" />}
                   {corner === "bottomRight" && <RadiusbottomRight className="w-5 h-5 text-gray-600" />}
-                </div>  
+                </div>
 
                 {/* Input */}
                 <input
