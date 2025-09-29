@@ -1,8 +1,8 @@
 const MainSetting = ({divisionId}) => {
 
     return (
-        <div className="w-full h-full bg-white flex items-center justify-center">
-            <div className="w-full max-w-5xl h-full rounded-lg overflow-y-scroll py-8 px-4">
+        <div className="w-full min-h-full bg-white flex items-start justify-center">
+            <div className="w-full max-w-5xl rounded-lg px-4 pt-5 pb-30"> 
                 <h1 className='text-[25px] font-medium text-black/80'>Project Settings</h1>
                 <div className="bg-white border border-gray-300 rounded-lg mt-6 flex-col">
                     <div className="w-full py-10 px-6 flex items-start justify-between">
@@ -51,7 +51,6 @@ const MainSetting = ({divisionId}) => {
                     </div>
                 </div>
             </div>
-            
         </div>
     );
 }

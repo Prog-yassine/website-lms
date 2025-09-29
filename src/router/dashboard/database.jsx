@@ -6,6 +6,15 @@ import { ReactComponent as Database_2 } from '../../assets/icons/database-2.svg'
 
 import Main from './database/main';
 
+const MainPage = () => {
+  return(
+    <div className='w-full h-full flex items-center justify-center'>
+      <h1>Select a database</h1>
+    </div>
+  )
+}
+
+
 const Database = ({ divisionId }) => {
 
     const location = useLocation();
@@ -33,15 +42,6 @@ const Database = ({ divisionId }) => {
                     </Link>
                 </div>
 
-                <div>
-                    <Link to={`/dashboard/division/${divisionId}/database/iam`}>
-                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
-                        ${location.pathname.endsWith('/database/iam') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
-                            <Database_2 className='w-5 h-5'/>
-                            <h1>iam</h1>
-                        </div>
-                    </Link>
-                </div>
 
             </div>
         </div>
@@ -51,6 +51,7 @@ const Database = ({ divisionId }) => {
       {/* Main Content */}
       <div className="flex-1 bg-white h-full flex flex-col">
         <Routes>
+            <Route path="/" element={<MainPage/>} />
             <Route path="/*" element={<Main />} />
         </Routes>
       </div>

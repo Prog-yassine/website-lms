@@ -1,0 +1,24 @@
+{
+    "message": "Token is valid",
+    "user": {
+        "uuid": "706758b9-5111-45ba-af10-f815f1086bd5",
+        "name": "yassine",
+        "email": "yassineaboutaib01@gmail.com"
+    },
+    "organizations": [
+        {
+            "id": "cc40d600-4b96-4581-9859-962abc7971eb",
+            "name": "universiapolis",
+            "projects": [
+                {
+                    "id": "b0fabc44-088b-45d8-9f83-b3ba87bfbf51",
+                    "name": "polytechnique"
+                },
+                {
+                    "id": "2863e62e-d5a5-49a2-84e6-ba5fde3ba7ec",
+                    "name": "isiam"
+                }
+            ]
+        }
+    ]
+}

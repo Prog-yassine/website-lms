@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from "../protected";
+
 import { ReactComponent as ChevronDown } from '../assets/icons/chevron-down.svg';
 
 const plans = [
@@ -17,6 +19,8 @@ const types = [
 
 const NewOrganization = () => {
   const navigate = useNavigate();
+  const authData = useContext(AuthContext);
+
 
   const [name, setName] = useState("");
   const [plan, setPlan] = useState(plans[0]);
@@ -52,7 +56,7 @@ const NewOrganization = () => {
           name,
           type: type.name,
           plan: plan.name,
-          root: "root-uuid-ou-id" // remplace par l’ID/UUID réel du root user
+          root: authData.user.uuid // remplace par l’ID/UUID réel du root user
         }),
       });
 
@@ -63,7 +67,7 @@ const NewOrganization = () => {
 
       // Redirection après 1.5 sec
       setTimeout(() => {
-        navigate(`/dashboard/division/new/${data.uuid}`);
+        navigate(`/dashboard/org/${data.uuid}/division/new`);
       }, 1500);
     } catch (err) {
       console.error(err);

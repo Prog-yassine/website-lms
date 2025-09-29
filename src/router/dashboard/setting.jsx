@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 
 import MainSetting from './setting/main';
+import Compute from './setting/compute';
 
 const Setting = ({divisionId}) => {
 
@@ -11,7 +12,7 @@ const Setting = ({divisionId}) => {
 
 
   return (
-    <div className="w-full h-screen flex flex-row relative overflow-hidden">
+    <div className="w-full h-full flex flex-row relative overflow-hidden min-h-0">
       {/* Left Menu */}
       <div className="w-[300px] h-full bg-white border-r border-gray-300 flex-col">
         <div className="w-full py-4 px-3 border-b border-gray-300">
@@ -32,9 +33,9 @@ const Setting = ({divisionId}) => {
 
                 {/* Users */}
                 <div>
-                    <Link to={`/dashboard/division/${divisionId}/setting/compute-disk`}>
+                    <Link to={`/dashboard/division/${divisionId}/setting/compute`}>
                         <div className={`w-full px-3 py-1 rounded-lg font-medium 
-                        ${location.pathname.endsWith('/setting/compute-disk') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
+                        ${location.pathname.endsWith('/setting/compute') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
                             <h1>Compute and Disk</h1>
                         </div>
                     </Link>
@@ -46,10 +47,10 @@ const Setting = ({divisionId}) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white h-full flex flex-col">
+      <div className="flex-1 bg-white flex flex-col overflow-y-auto">
         <Routes>
             <Route path="/" element={<MainSetting divisionId={divisionId} />} />
-            <Route path="/compute-disk" element={<div />} />
+            <Route path="/compute" element={<Compute divisionId={divisionId} />} />
         </Routes>
       </div>
     </div>

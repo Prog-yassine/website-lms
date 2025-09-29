@@ -1,14 +1,19 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext } from "react";
+
+// Create a context to share auth data
+export const AuthContext = createContext(null);
 
 const ProtectedRoute = () => {
-  const [isValid, setIsValid] = useState(null); // null = loading, true/false après vérification
+  const [isValid, setIsValid] = useState(null);
+  const [authData, setAuthData] = useState(null); // Store API response data
 
   useEffect(() => {
     const verifyToken = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         setIsValid(false);
+        setAuthData(null);
         return;
       }
 
@@ -21,14 +26,18 @@ const ProtectedRoute = () => {
           },
         });
 
+        const data = await res.json();
         if (res.ok) {
           setIsValid(true);
+          setAuthData(data); // Save returned data
         } else {
           setIsValid(false);
+          setAuthData(null);
         }
       } catch (err) {
         console.error("Error verifying token:", err);
         setIsValid(false);
+        setAuthData(null);
       }
     };
 
@@ -45,8 +54,12 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // If valid → render child routes
-  return <Outlet />;
+  // Provide authData to child routes via context
+  return (
+    <AuthContext.Provider value={authData}>
+      <Outlet />
+    </AuthContext.Provider>
+  );
 };
 
 export default ProtectedRoute;

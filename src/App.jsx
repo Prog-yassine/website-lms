@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-
 import Home from './router/home';
 
 
@@ -13,7 +12,11 @@ import ProtectedRoute from "./protected"; // <-- import
 import Division from './router/division';
 
 
+
+
 function App() {
+
+
   return (
     <Router>
       <div className="selection:bg-emerald-400">

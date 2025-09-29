@@ -16,7 +16,7 @@ const Auth = ({divisionId}) => {
 
 
   return (
-    <div className="w-full h-screen flex flex-row relative overflow-hidden">
+    <div className="w-full h-full flex flex-row relative overflow-hidden">
       {/* Left Menu */}
       <div className="w-[300px] h-full bg-white border-r border-gray-300 flex-col">
         <div className="w-full py-4 px-3 border-b border-gray-300">
