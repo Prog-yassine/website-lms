@@ -73,7 +73,7 @@ const TemplatesTab = () => {
           onClick={() => setActiveTab("editor")}
           className={`px-4 py-2 text-sm font-medium cursor-pointer ${
             activeTab === "editor"
-              ? "border-b-2 border-blue-500 text-blue-600"
+              ? "border-b-2 border-emerald-500 text-emerald-600"
               : "text-gray-600 border-b-2 border-white"
           }`}
         >
@@ -83,7 +83,7 @@ const TemplatesTab = () => {
           onClick={() => setActiveTab("preview")}
           className={`ml-4 px-4 py-2 text-sm font-medium cursor-pointer ${
             activeTab === "preview"
-              ? "border-b-2 border-blue-500 text-blue-600"
+              ? "border-b-2 border-emerald-500 text-emerald-600"
               : "text-gray-600 border-b-2 border-white"
           }`}
         >
