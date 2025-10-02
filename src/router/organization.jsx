@@ -36,7 +36,7 @@ const Organization = () => {
       </div>
 
       {/* CONTENT */}
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="min-w-5xl mx-auto p-6 space-y-6">
         <h2 className="text-2xl font-bold my-6">
           Welcome to the Organization Dashboard
         </h2>

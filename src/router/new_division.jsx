@@ -2,13 +2,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ReactComponent as ChevronDown } from "../assets/icons/chevron-down.svg";
 
-const awsRegions = [
-  { name: "US East (N. Virginia)", code: "us-east-1", flag: "https://flagcdn.com/us.svg" },
-  { name: "US West (Oregon)", code: "us-west-2", flag: "https://flagcdn.com/us.svg" },
-  { name: "Europe (Ireland)", code: "eu-west-1", flag: "https://flagcdn.com/ie.svg" },
-  { name: "Asia Pacific (Tokyo)", code: "ap-northeast-1", flag: "https://flagcdn.com/jp.svg" },
-  { name: "Asia Pacific (Mumbai)", code: "ap-south-1", flag: "https://flagcdn.com/in.svg" },
-  { name: "Middle East (Bahrain)", code: "me-south-1", flag: "https://flagcdn.com/bh.svg" },
+const configurations = [
+  { name: "Micro", price: 10, cpu: 256, memory: 1024, direct: 60, pooler: 200 },      // 0.25 vCPU, 1GB
+  { name: "Small", price: 15, cpu: 256, memory: 2048, direct: 90, pooler: 400 },      // 0.25 vCPU, 2GB
+  { name: "Medium", price: 30, cpu: 512, memory: 4096, direct: 120, pooler: 800 },    // 0.5 vCPU, 4GB
+  { name: "Large", price: 60, cpu: 1024, memory: 8192, direct: 180, pooler: 1200 },   // 1 vCPU, 8GB
+  { name: "XLarge", price: 120, cpu: 2048, memory: 16384, direct: 240, pooler: 2000 }, // 2 vCPU, 16GB
+  { name: "2XLarge", price: 240, cpu: 4096, memory: 32768, direct: 360, pooler: 3000 }, // 4 vCPU, 32GB
+  { name: "4XLarge", price: 480, cpu: 8192, memory: 65536, direct: 500, pooler: 5000 }, // 8 vCPU, 64GB
+  { name: "8XLarge", price: 960, cpu: 16384, memory: 131072, direct: 500, pooler: 8000 }, // 16 vCPU, 128GB
+  { name: "16XLarge", price: 1920, cpu: 32768, memory: 262144, direct: 500, pooler: 12000 }, // 32 vCPU, 256GB
 ];
 
 
@@ -18,8 +21,8 @@ const NewDivision = () => {
   const navigate = useNavigate();
 
   const [divisionName, setDivisionName] = useState("");
-  const [region, setRegion] = useState(awsRegions[0]);
-  const [regionOpen, setRegionOpen] = useState(false);
+  const [config, setConfig] = useState(configurations[0]);
+  const [configOpen, setConfigOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,7 +49,7 @@ const NewDivision = () => {
         },
         body: JSON.stringify({
           name: divisionName,
-          region: region.code,
+          config: config,
           organization: id,
         }),
       });
@@ -115,41 +118,39 @@ const NewDivision = () => {
                   />
                 </div>
               </div>
-
-              {/* Region Selector */}
+              {/* Configuration Selector */}
               <div className="flex items-start gap-4">
-                <label className="w-1/4 pt-2 text-sm font-medium text-gray-700">Region</label>
+                <label className="w-1/4 pt-2 text-sm font-medium text-gray-700">Configuration</label>
                 <div className="w-3/4 relative">
                   <div
-                    onClick={() => setRegionOpen(!regionOpen)}
+                    onClick={() => setConfigOpen(!configOpen)}
                     className="cursor-pointer p-2 border border-gray-300 rounded-md flex items-center justify-between bg-white hover:bg-gray-50"
                   >
-                    <div className="flex items-center gap-2">
-                      <img src={region.flag} alt="flag" className="w-5 h-5 rounded-sm" />
-                      <span>{region.name}</span>
-                    </div>
+                    <span>{config.name}</span>
                     <span className="ml-auto">
                       <ChevronDown />
                     </span>
                   </div>
-                  {regionOpen && (
+                  {configOpen && (
                     <ul className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow z-10 max-h-60 overflow-y-auto">
-                      {awsRegions.map((opt) => (
+                      {configurations.map((config) => (
                         <li
-                          key={opt.code}
+                          key={config.name}
                           onClick={() => {
-                            setRegion(opt);
-                            setRegionOpen(false);
+                            setConfig(config); // use same state variable
+                            setConfigOpen(false);
                           }}
-                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
                         >
-                          <img src={opt.flag} alt="flag" className="w-5 h-5 rounded-sm" />
-                          <span>{opt.name}</span>
+                          <span>{config.name}</span>
+                          <span className="text-gray-500">${config.price}</span>
                         </li>
                       ))}
                     </ul>
                   )}
-                  <p className="text-sm text-gray-500 mt-1">Choose the closest AWS region for best performance.</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Select the configuration you want for this division.
+                  </p>
                 </div>
               </div>
             </div>
