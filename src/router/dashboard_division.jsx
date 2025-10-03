@@ -23,6 +23,8 @@ import { AuthContext } from "../protected"; // 👈 ajoute ton context ici
 const DashboardDivision = () => {
   const { id } = useParams();
   const { organizations } = useContext(AuthContext); // 👈 récupère les orgs du contexte
+  const [Logs, setLogs] = useState([]);
+
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -52,6 +54,29 @@ const DashboardDivision = () => {
     { icon: <Blocks className="w-6 h-6"/>, title: "Integrations", link: `/dashboard/division/${id}/integrations` },
     { icon: <Settings className="w-6 h-6"/>, title: "Settings", link: `/dashboard/division/${id}/setting/` },
   ];
+
+
+  useEffect(() => {
+      const verifyToken = async () => {
+        try {
+          const res = await fetch("http://localhost:5000/api/data/status/" + id, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+  
+          const data = await res.json();
+          setLogs(data.logs || []);
+          console.log(Logs)
+        } catch (err) {
+          console.error("Error Getting Data token:", err);
+        }
+      };
+  
+      verifyToken();
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 w-full font-sans font-[inter]">
@@ -130,7 +155,7 @@ const DashboardDivision = () => {
               <Routes>
                 <Route path="integrations" element={<Integrations/>} />
                 <Route path="auth/*" element={<Auth divisionId={id} />} />
-                <Route path="" element={<Home/>} />
+                <Route path="" element={<Home divisionId={id} logs={Logs}/>} />
                 <Route path="storage/*" element={<Storage divisionId={id}/>} />
                 <Route path="setting/*" element={<Setting divisionId={id}/>} />
                 <Route path="database/*" element={<Database divisionId={id}/>} />

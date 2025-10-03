@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 import { ReactComponent as CPU } from '../../assets/icons/cpu.svg';
 import { ReactComponent as Server } from '../../assets/icons/server.svg';
 import { ReactComponent as Database } from '../../assets/icons/database.svg';
@@ -32,17 +34,17 @@ const last7Days = getLast7Days();
 
 const cpuData = last7Days.map((day) => ({
   name: day,
-  usage: Math.floor(Math.random() * 100), // % usage CPU
+  usage: 0
 }));
 
 const ramData = last7Days.map((day) => ({
   name: day,
-  usage: Math.floor(Math.random() * 100), // % usage RAM
+  usage: 0
 }));
 
 const MAU = last7Days.map((day) => ({
   name: day,
-  DAU: Math.floor(Math.random() * 200), // nb users actifs
+  DAU: 0
 }));
 
 const storageData = [
@@ -52,7 +54,9 @@ const storageData = [
 
 const COLORS = ["#00bc7d", "#e5e7eb"];
 
-const Home = () => {
+const Home = ({logs}) => {
+
+
   return (
     <div className="h-screen w-full p-6 bg-white overflow-y-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -139,8 +143,21 @@ const Home = () => {
             <h2 className="text-lg font-semibold">Console Log</h2>
           </div>
           <div className="h-[200px] overflow-y-auto bg-gray-50 rounded-xl p-3 text-sm font-mono text-gray-700">
-            <p>[12:01:05] Server started on port 3000</p>
+
+            {Array.isArray(logs) && logs.map((log, index) => {
+              // Convert timestamp into readable date/time
+              const formattedTime = new Date(log.timestamp).toLocaleString();
+
+              return (
+                <div key={index} className="mb-1 flex">
+                  <h1 className='font-semibold'>[{formattedTime}] :</h1>
+                  <h1>{log.message || JSON.stringify(log)}</h1>
+                </div>
+              );
+            })}
+
           </div>
+
         </div>
 
         

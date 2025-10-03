@@ -1,3 +1,5 @@
+
+
 import { ReactComponent as RowRight } from '../assets/icons/chevron-right.svg';
 import { ReactComponent as LockPassword } from '../assets/icons/lock-password.svg';
 import { ReactComponent as FolderCog } from '../assets/icons/folder-cog.svg';
@@ -14,12 +16,16 @@ import { ReactComponent as Spy } from '../assets/icons/spy.svg';
 import { ReactComponent as Ai } from '../assets/icons/ai.svg';
 import { ReactComponent as Message_circle } from '../assets/icons/message-circle.svg';
 
+
+
 import NavBar from '../components/nav/nav';
 import InfiniteLoop from '../components/infinity-loop/infinity-loop';
 import IntegrationsSection from '../components/integration';
 import Footer from '../components/footer/footer';
 
 const Home = () => {
+
+
   return (
     <div className="flex flex-col min-h-screen font-sans font-[inter] overflow-x-hidden">
       {/* Navbar */}
