@@ -18,7 +18,7 @@ const NavBar = () => {
         {/* Menu Links */}
         <ul className="hidden md:flex space-x-6 lg:space-x-10 text-gray-700 font-medium">
           <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Product</a></li>
-          <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Developers</a></li>
+          <li onClick={() => navigate("/devs")}><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Developers</a></li>
           <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">University</a></li>
           <li onClick={() => navigate("/pricing")} className="cursor-pointer"><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Pricing</a></li>
           <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Docs</a></li>

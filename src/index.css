@@ -3,15 +3,47 @@
 @tailwind utilities;
 
 
-*::-webkit-scrollbar {
-    display: none;
+* {
+  scrollbar-width: none;         /* hide in Firefox */
+  -ms-overflow-style: none;      /* hide in IE11 */
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-* {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+/* WebKit (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
+
+/* === Rendre visible le scrollbar uniquement pour #scrollbar === */
+/* Firefox */
+#scrollbar {
+  scrollbar-width: thin;         /* 'auto'|'thin'|'none' */
+}
+
+/* WebKit — taille et style du thumb/track */
+#scrollbar::-webkit-scrollbar {
+  width: 10px;                   /* width for vertical scrollbar */
+  height: 10px;                  /* height for horizontal scrollbar */
+}
+
+#scrollbar::-webkit-scrollbar-track {
+  background: transparent;       /* track background */
+}
+
+#scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.25);  /* thumb color */
+  border-radius: 9999px;
+  border: 2px solid transparent; /* add spacing if needed */
+}
+
+/* optionnel : change couleur au survol */
+#scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.35);
+}
+
+
+/* Hide scrollbar for IE, Edge and Firefox */
+
 
 
 body {

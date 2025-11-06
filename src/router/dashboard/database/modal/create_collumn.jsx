@@ -93,7 +93,7 @@ const CustomSelect = ({ options, value, onChange }) => {
     );
 };
 
-const Create_Column = ({ onClose, onCreate }) => {
+const Create_Column = ({ onClose, onCreate, bearerToken, public_ip  }) => {
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [type, setType] = useState(null);
@@ -101,19 +101,43 @@ const Create_Column = ({ onClose, onCreate }) => {
     const [isPrimary, setIsPrimary] = useState(false);
     const [isNullable, setIsNullable] = useState(false);
     const [isUnique, setIsUnique] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-
-    const handleCreate = () => {
+    const handleCreate = async () => {
         if (!name || !type) return; // validation simple
-        onCreate({
-            name,
-            type: type.label,
-            desc,
-            defaultValue,
-            isPrimary,
-            isNullable,
-            isUnique,
-        });
+        setLoading(true);
+        setError("");
+
+        try {
+            const res = await fetch(`http://${public_ip}:3000/third_party/add-column/users`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${bearerToken}`,
+                },
+                body: JSON.stringify({
+                    name,
+                    type: type.label,
+                    defaultValue,
+                    isPrimary,
+                    isNullable,
+                    isUnique,
+                    desc, // tu peux stocker la description ailleurs si besoin
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Erreur serveur");
+
+            // notifier le parent pour rafraîchir la table
+            onCreate && onCreate({ name, type: type.label, desc, defaultValue, isPrimary, isNullable, isUnique, });;
+            onClose();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
 

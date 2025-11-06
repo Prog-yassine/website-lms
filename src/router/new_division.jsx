@@ -3,15 +3,32 @@ import { useState } from "react";
 import { ReactComponent as ChevronDown } from "../assets/icons/chevron-down.svg";
 
 const configurations = [
-  { name: "Micro", price: 10, cpu: 256, memory: 1024, direct: 60, pooler: 200 },      // 0.25 vCPU, 1GB
-  { name: "Small", price: 15, cpu: 256, memory: 2048, direct: 90, pooler: 400 },      // 0.25 vCPU, 2GB
-  { name: "Medium", price: 30, cpu: 512, memory: 4096, direct: 120, pooler: 800 },    // 0.5 vCPU, 4GB
-  { name: "Large", price: 60, cpu: 1024, memory: 8192, direct: 180, pooler: 1200 },   // 1 vCPU, 8GB
-  { name: "XLarge", price: 120, cpu: 2048, memory: 16384, direct: 240, pooler: 2000 }, // 2 vCPU, 16GB
-  { name: "2XLarge", price: 240, cpu: 4096, memory: 32768, direct: 360, pooler: 3000 }, // 4 vCPU, 32GB
-  { name: "4XLarge", price: 480, cpu: 8192, memory: 65536, direct: 500, pooler: 5000 }, // 8 vCPU, 64GB
-  { name: "8XLarge", price: 960, cpu: 16384, memory: 131072, direct: 500, pooler: 8000 }, // 16 vCPU, 128GB
-  { name: "16XLarge", price: 1920, cpu: 32768, memory: 262144, direct: 500, pooler: 12000 }, // 32 vCPU, 256GB
+  // 0.25 vCPU : 512, 1024, 2048 MB
+  { name: "Micro", price: 10, cpu: 256, memory: 1024, direct: 60, pooler: 200 }, // 0.25 vCPU, 1GB
+
+  // 0.5 vCPU : 1024–4096 MB
+  { name: "Small", price: 15, cpu: 512, memory: 2048, direct: 90, pooler: 400 }, // 0.5 vCPU, 2GB
+
+  // 1 vCPU : 2048–8192 MB
+  { name: "Medium", price: 30, cpu: 1024, memory: 4096, direct: 120, pooler: 800 }, // 1 vCPU, 4GB
+
+  // 2 vCPU : 4096–16384 MB
+  { name: "Large", price: 60, cpu: 2048, memory: 8192, direct: 180, pooler: 1200 }, // 2 vCPU, 8GB
+
+  // 4 vCPU : 8192–30720 MB
+  { name: "XLarge", price: 120, cpu: 4096, memory: 16384, direct: 240, pooler: 2000 }, // 4 vCPU, 16GB
+
+  // 8 vCPU : 16384–61440 MB
+  { name: "2XLarge", price: 240, cpu: 8192, memory: 32768, direct: 360, pooler: 3000 }, // 8 vCPU, 32GB
+
+  // 16 vCPU : 32768–122880 MB
+  { name: "4XLarge", price: 480, cpu: 16384, memory: 65536, direct: 500, pooler: 5000 }, // 16 vCPU, 64GB
+
+  // 16 vCPU toujours (max supporté)
+  { name: "8XLarge", price: 960, cpu: 16384, memory: 98304, direct: 500, pooler: 8000 }, // 16 vCPU, 96GB
+
+  // 16 vCPU toujours (haut de gamme)
+  { name: "16XLarge", price: 1920, cpu: 16384, memory: 122880, direct: 500, pooler: 12000 }, // 16 vCPU, 120GB
 ];
 
 

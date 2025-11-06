@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { Routes, Route, useParams, Link } from "react-router-dom";
 
+
 import { ReactComponent as Users } from '../assets/icons/users.svg';
 import { ReactComponent as Blocks } from '../assets/icons/blocks.svg';
 import { ReactComponent as Settings } from '../assets/icons/settings.svg';
@@ -20,12 +21,14 @@ import Database from "./dashboard/database";
 
 import { AuthContext } from "../protected"; // 👈 ajoute ton context ici
 
+
 const DashboardDivision = () => {
   const { id } = useParams();
   const { organizations } = useContext(AuthContext); // 👈 récupère les orgs du contexte
   const [Logs, setLogs] = useState([]);
 
-
+  const bearerToken = "55YI8k0h7mBL4BZf1AaUT1voE3zZpfM96O95gHYGeSgJl1P4F3ZJj3g8uEexjlIRtPMBm8sd6ld8Mprl5svMc4gjxRGp";
+  
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -77,6 +80,7 @@ const DashboardDivision = () => {
   
       verifyToken();
   }, []);
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 w-full font-sans font-[inter]">
@@ -142,14 +146,20 @@ const DashboardDivision = () => {
         {/* Main content */}
         <div className="flex-1 pt-8 pl-8 pr-0">
           <div className="bg-white border-l border-t border-b border-gray-300 h-full rounded-tl-xl">
-            <div className="w-full h-20 flex items-center px-8 space-x-3 border-b border-gray-300">
-              <div>
-                <img src="../../../../logo.svg" alt="" className="w-8 h-8"/>
+            <div className="w-full h-20 flex items-center px-8 border-b border-gray-300 flex justify-between">
+              <div className="w-full h-20 flex items-center space-x-3">
+                <div>
+                  <img src="../../../../logo.svg" alt="" className="w-8 h-8"/>
+                </div>
+                <h2 className="font-medium text-gray-400 text-2xl">/</h2>
+                <h2 className="font-semibold text-gray-900 text-2xl">{currentOrg?.name || "Unknown Org"}</h2>
+                <h2 className="font-medium text-gray-400 text-2xl">/</h2>
+                <h2 className="font-semibold text-gray-900 text-2xl">{currentProject?.name || "Unknown Project"}</h2>
               </div>
-              <h2 className="font-medium text-gray-400 text-2xl">/</h2>
-              <h2 className="font-semibold text-gray-900 text-2xl">{currentOrg?.name || "Unknown Org"}</h2>
-              <h2 className="font-medium text-gray-400 text-2xl">/</h2>
-              <h2 className="font-semibold text-gray-900 text-2xl">{currentProject?.name || "Unknown Project"}</h2>
+              <span className="px-4 py-2 bg-green-200 rounded-full flex items-center space-x-2 text-green-800 text-lg font-medium">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <h2>{currentProject?.ip}</h2>
+              </span>
             </div>
             <div className="h-full overflow-y-auto">
               <Routes>
@@ -158,7 +168,7 @@ const DashboardDivision = () => {
                 <Route path="" element={<Home divisionId={id} logs={Logs}/>} />
                 <Route path="storage/*" element={<Storage divisionId={id}/>} />
                 <Route path="setting/*" element={<Setting divisionId={id}/>} />
-                <Route path="database/*" element={<Database divisionId={id}/>} />
+                <Route path="database/*" element={<Database divisionId={id} bearerToken={bearerToken} public_ip={currentProject?.ip}/>} />
               </Routes>
             </div>
           </div>

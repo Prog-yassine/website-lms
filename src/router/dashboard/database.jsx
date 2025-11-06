@@ -15,7 +15,7 @@ const MainPage = () => {
 }
 
 
-const Database = ({ divisionId }) => {
+const Database = ({ divisionId, bearerToken, public_ip }) => {
 
     const location = useLocation();
 
@@ -42,6 +42,37 @@ const Database = ({ divisionId }) => {
                     </Link>
                 </div>
 
+                <div>
+                    <Link to={`/dashboard/division/${divisionId}/database/section`}>
+                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
+                        ${location.pathname.endsWith('/database/section') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
+                            <Database_2 className='w-5 h-5'/>
+                            <h1>section</h1>
+                        </div>
+                    </Link>
+                </div>
+
+                <div>
+                    <Link to={`/dashboard/division/${divisionId}/database/block`}>
+                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
+                        ${location.pathname.endsWith('/database/block') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
+                            <Database_2 className='w-5 h-5'/>
+                            <h1>block</h1>
+                        </div>
+                    </Link>
+                </div>
+
+
+                <div>
+                    <Link to={`/dashboard/division/${divisionId}/database/quizzes`}>
+                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
+                        ${location.pathname.endsWith('/database/quizzes') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
+                            <Database_2 className='w-5 h-5'/>
+                            <h1>quizzes</h1>
+                        </div>
+                    </Link>
+                </div>
+
 
             </div>
         </div>
@@ -52,7 +83,7 @@ const Database = ({ divisionId }) => {
       <div className="flex-1 bg-white h-full flex flex-col">
         <Routes>
             <Route path="/" element={<MainPage/>} />
-            <Route path="/*" element={<Main />} />
+            <Route path="/:table" element={<Main bearerToken={bearerToken} public_ip={public_ip} />} />
         </Routes>
       </div>
     </div>

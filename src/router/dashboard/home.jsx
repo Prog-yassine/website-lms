@@ -138,36 +138,63 @@ const Home = ({logs}) => {
         </div>
 
         {/* Console Log (2 columns wide) */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-300 col-span-2">
-          <div className="flex items-center">
-            <h2 className="text-lg font-semibold">Console Log</h2>
-          </div>
-          <div className="h-[200px] overflow-y-auto bg-gray-50 rounded-xl p-3 text-sm font-mono text-gray-700">
-
-            {Array.isArray(logs) && logs.map((log, index) => {
-              // Convert timestamp into readable date/time
-              const formattedTime = new Date(log.timestamp).toLocaleString();
-
-              return (
-                <div key={index} className="mb-1 flex">
-                  <h1 className='font-semibold'>[{formattedTime}] :</h1>
-                  <h1>{log.message || JSON.stringify(log)}</h1>
-                </div>
-              );
-            })}
-
+        <div className="bg-white p-4 rounded-2xl border border-gray-300 col-span-2 shadow-sm">
+          <div className="flex w-full items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">Console Log</h2>
+            <button className="px-3 rounded-lg border border-emerald-400 hover:bg-emerald-300 cursor-pointer py-1 bg-emerald-200 font-medium transition">
+              Refresh
+            </button>
           </div>
 
+          <div className="overflow-y-auto border-t border-gray-200 pt-2 text-sm font-mono text-gray-800 max-h-[200px] p-3">
+            {Array.isArray(logs) && logs.length > 0 ? (
+              logs.map((log, index) => {
+                const formattedTime = new Date(log.timestamp).toLocaleTimeString();
+                const date = new Date(log.timestamp).toLocaleDateString();
+                let message = log.message || JSON.stringify(log);
+
+                // Detect IPs (IPv4)
+                const ipRegex = /\b\d{1,3}(\.\d{1,3}){3}\b/g;
+
+                // Replace IPs with bold version
+                const formattedMessage = message.replace(
+                  ipRegex,
+                  (ip) => `<span class='font-bold text-emerald-700'>${ip}</span>`
+                );
+
+                return (
+                  <div
+                    key={index}
+                    className="mb-2 border-b border-gray-200 pb-1 last:border-none last:pb-0"
+                  >
+                    <div className="flex items-center gap-2 text-emerald-700 font-bold">
+                      <span>[{date} {formattedTime}]</span>
+                    </div>
+                    <pre
+                      className="text-gray-700 whitespace-pre-wrap break-words pl-2"
+                      dangerouslySetInnerHTML={{ __html: formattedMessage }}
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-gray-500 italic text-center py-4">
+                No logs available...
+              </p>
+            )}
+          </div>
         </div>
+
+
 
         
         <div className="bg-white p-4 rounded-2xl border border-gray-300 col-span-2  h-[300px]">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <User className="w-7 h-7 text-black mr-2"/>
-              <h2 className="text-lg font-semibold">IAM</h2>
+              <h2 className="text-lg font-semibold">UPM</h2>
             </div>
-            <button className='px-5 rounded-lg cursor-pointer border border-emerald-600 py-1 bg-emerald-400'>Add</button>
+            <button className='px-3 rounded-lg border border-emerald-400 hover:bg-emerald-300 cursor-pointer py-1 bg-emerald-200 font-medium'>Add</button>
           </div>
           <div className="overflow-y-auto rounded-xl text-sm space-y-2 py-2 font-mono flex-col h-[240px]">
             <div className='flex items-center hover:bg-gray-100 border-b border-gray-300 px-2 py-3 cursor-pointer'>
