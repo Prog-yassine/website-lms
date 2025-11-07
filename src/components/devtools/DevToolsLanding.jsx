@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import NavBar from "../nav/nav";
 import Footer from "../footer/footer";
+import InfiniteDivs from '../infinity-loop/InfiniteDivs';
 
 const Feature = ({ title, desc, icon }) => (
   <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -18,17 +19,32 @@ const DevToolsLanding = () => {
   return (
     <div className="w-full font-sans min-h-screen bg-gray-50">
       <NavBar />
-
-      <header className="pt-28 pb-8">
-        <div className="max-w-6xl mx-auto px-6 text-center">
+ 
+       <header className="pt-28 pb-8">
+         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">Developer tools & Integrations</h1>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">Build plugins, access admin-scoped datasets, and extend your university's LMS with secure, performant APIs. Admins control which datasets are available and who can access them.</p>
-          <div className="mt-6 flex items-center justify-center gap-4">
+
+          {/* center logo with particle background */}
+          <div className="relative my-8 flex items-center justify-center">
+            {/* larger centered logo/div (on top) */}
+            <div className="relative z-10 flex items-center justify-center w-48 h-48 rounded-full bg-emerald-50 border border-emerald-100 shadow-[0px_0px_100px_20px_rgba(34,_197,_94,_0.5)]">
+              {/* replace with your actual logo SVG/component if you have one */}
+              <div className="text-emerald-600 font-bold">APP LOGO</div>
+            </div>
+
+            {/* infinite row of 50x50 divs sliding right→left behind the logo */}
+            <InfiniteDivs count={20} size={100} speed={0.6} color="rgba(16,185,129,1)" />
+          </div>
+
+          <div className="mt-10 flex items-center justify-center gap-4">
             <a className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-md font-medium" href="#">Request Access</a>
             <a className="inline-block text-emerald-600 border border-emerald-200 px-6 py-3 rounded-md font-medium" href="#">View docs</a>
           </div>
         </div>
       </header>
+
+      {/* no extra keyframes required; infinite strip uses transform animation via requestAnimationFrame */}
 
       <main className="max-w-6xl mx-auto px-6 pb-20">
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
