@@ -20,8 +20,8 @@ const DevToolsLanding = () => {
     <div className="w-full font-sans min-h-screen bg-gray-50">
       <NavBar />
  
-       <header className="pt-28 pb-8">
-         <div className="max-w-6xl mx-auto px-6 text-center">
+        <header className="pt-28 pb-8">
+          <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">Developer tools & Integrations</h1>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">Build plugins, access admin-scoped datasets, and extend your university's LMS with secure, performant APIs. Admins control which datasets are available and who can access them.</p>
 
@@ -30,11 +30,28 @@ const DevToolsLanding = () => {
             {/* larger centered logo/div (on top) */}
             <div className="relative z-10 flex items-center justify-center w-48 h-48 rounded-full bg-emerald-50 border border-emerald-100 shadow-[0px_0px_100px_20px_rgba(34,_197,_94,_0.5)]">
               {/* replace with your actual logo SVG/component if you have one */}
-              <div className="text-emerald-600 font-bold">APP LOGO</div>
+              <div className="text-emerald-600 font-bold">
+                <img src="../logo.svg" alt="DevTools Logo" className="w-24 h-24" />
+              </div>
             </div>
 
             {/* infinite row of 50x50 divs sliding right→left behind the logo */}
-            <InfiniteDivs count={20} size={100} speed={0.6} color="rgba(16,185,129,1)" />
+            <InfiniteDivs
+              count={30}
+              size={90}
+              speed={0.8}
+              color="rgba(240, 240, 240, 1)"
+              icons={[
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/2048px-Notion-logo.svg.png",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/1200px-Slack_icon_2019.svg.png",
+                "https://www.citypng.com/public/uploads/preview/download-calendar-date-black-icon-png-701751694973924q5fls2varx.png",
+                "https://1000logos.net/wp-content/uploads/2021/06/Zoom-Logo.png",
+                "https://cdn4.iconfinder.com/data/icons/logos-brands-in-colors/48/google-meet-512.png",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Google_Drive_logo.png/1200px-Google_Drive_logo.png",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Microsoft_Office_logo_%282013%E2%80%932019%29.svg/648px-Microsoft_Office_logo_%282013%E2%80%932019%29.svg.png",
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/1024px-Visual_Studio_Code_1.35_icon.svg.png"
+              ]}
+            />
           </div>
 
           <div className="mt-10 flex items-center justify-center gap-4">
