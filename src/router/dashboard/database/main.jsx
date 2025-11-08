@@ -34,7 +34,7 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
   useEffect(() => {
     const fetchTenantTable = async () => {
       try {
-        const res = await fetch(`http://${public_ip}:3000/third_party/${table}`, {
+        const res = await fetch(`http://localhost:5000/api/data/table/${table}`, {
           headers: { Authorization: `Bearer ${bearerToken}` },
         });
         if (!res.ok) throw new Error("Failed to fetch tenant table");

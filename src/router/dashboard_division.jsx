@@ -27,7 +27,7 @@ const DashboardDivision = () => {
   const { organizations } = useContext(AuthContext); // 👈 récupère les orgs du contexte
   const [Logs, setLogs] = useState([]);
 
-  const bearerToken = "55YI8k0h7mBL4BZf1AaUT1voE3zZpfM96O95gHYGeSgJl1P4F3ZJj3g8uEexjlIRtPMBm8sd6ld8Mprl5svMc4gjxRGp";
+  const bearerToken = localStorage.getItem("token");
   
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
