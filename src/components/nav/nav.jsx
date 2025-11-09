@@ -17,7 +17,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="w-full h-[80px] backdrop-blur-md bg-white/30 border-b border-gray-300 top-0 left-0 z-50 select-none">
+    <nav className="fixed top-0 w-full h-[80px] backdrop-blur-md bg-white/30 border-b border-gray-300 top-0 left-0 z-50 select-none">
       <div className="max-w-[1940px] mx-auto px-6 lg:px-20 flex items-center justify-between h-full">
         
         {/* Logo + Title */}
@@ -91,7 +91,7 @@ const NavBar = () => {
                     <ul className="space-y-2 mt-3">
                       <li className="flex items-center">
                         <img src="/icons/icon7.svg" alt="Icon 7" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 7</a>
+                        <a href="#" className="text-sm">Pa</a>
                       </li>
                       <li className="flex items-center">
                         <img src="/icons/icon8.svg" alt="Icon 8" className="w-4 h-4 mr-2" />
