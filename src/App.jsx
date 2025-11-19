@@ -11,7 +11,7 @@ import Pricing from './router/pricing';
 import ProtectedRoute from "./protected"; // <-- import
 import Division from './router/division';
 import Developer from './router/developer';
-
+import Register from './router/register';
 
 
 function App() {
@@ -25,6 +25,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/devs" element={< Developer/>} />
 

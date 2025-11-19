@@ -93,7 +93,7 @@ const CustomSelect = ({ options, value, onChange }) => {
     );
 };
 
-const Create_Column = ({ onClose, onCreate, bearerToken, public_ip  }) => {
+const Create_Column = ({ onClose, onCreate, bearerToken, public_ip, dbname, table  }) => {
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [type, setType] = useState(null);
@@ -110,7 +110,7 @@ const Create_Column = ({ onClose, onCreate, bearerToken, public_ip  }) => {
         setError("");
 
         try {
-            const res = await fetch(`http://${public_ip}:3000/third_party/add-column/users`, {
+            const res = await fetch(`http://localhost:5000/api/data/add-column/${table}?dbname=${dbname}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

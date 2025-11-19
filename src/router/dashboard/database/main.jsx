@@ -11,7 +11,7 @@ import Create_Column from "./modal/create_collumn";
 import Create_Row from "./modal/create_row";
 import CsvImport from "./modal/csvfile";
 
-const Main = ({ divisionId, bearerToken, public_ip }) => {
+const Main = ({ divisionId, bearerToken, public_ip, dbname }) => {
   const { table } = useParams();
   const [InsertDropDownOpen, setInsertDropDownOpen] = useState(false);
   const [SortDropDownOpen, setSortDropDownOpen] = useState(false);
@@ -34,9 +34,12 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
   useEffect(() => {
     const fetchTenantTable = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/data/table/${table}`, {
-          headers: { Authorization: `Bearer ${bearerToken}` },
-        });
+        const res = await fetch(
+          `http://localhost:5000/api/data/table/${table}?dbname=${dbname}`,
+          {
+            headers: { Authorization: `Bearer ${bearerToken}` },
+          }
+        );
         if (!res.ok) throw new Error("Failed to fetch tenant table");
         const tableData = await res.json();
 
@@ -168,7 +171,7 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
         <table className="rounded-lg">
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-2 w-30 border-t border-b border-r border-gray-300">
+              <th className="p-2 min-w-30 border-t border-b border-r border-gray-300">
                 <input
                   type="checkbox"
                   checked={selected.length === data.length && data.length > 0}
@@ -200,7 +203,7 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
                   </div>
                 </th>
               ))}
-              <th className="w-30 border-t border-b border-r border-gray-300">
+              <th className="min-w-30 border-t border-b border-r border-gray-300">
                 <button
                   className="h-full w-30 flex items-center justify-center w-full cursor-pointer"
                   onClick={() => setColumnModalOpen(true)}
@@ -234,12 +237,14 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
                         value={row[col.name]}
                         onChange={(e) => handleChange(row.id, col.name, e.target.value)}
                         onBlur={handleBlur}
-                        className="text-sm w-full h-full outline-none px-2 whitespace-nowrap"
+                        className="w-[300px] text-sm h-full outline-none px-2 whitespace-nowrap w-full"
                         style={{ width: `${(row[col.name]?.length || 1) + 5}ch` }}
                       />
                     ) : (
                       <h1 className="p-2 text-sm whitespace-nowrap truncate overflow-hidden">
-                        {row[col.name] || ""}
+                        {row[col.name] !== null && typeof row[col.name] === "object"
+                          ? JSON.stringify(row[col.name])
+                          : row[col.name] || ""}
                       </h1>
                     )}
                   </td>
@@ -253,13 +258,13 @@ const Main = ({ divisionId, bearerToken, public_ip }) => {
       </div>
 
       {/* MODALS */}
-      {ColumnModalOpen && <Create_Column bearerToken={bearerToken} public_ip={public_ip} onClose={() => setColumnModalOpen(false)} onCreate={(col) => {
+      {ColumnModalOpen && <Create_Column bearerToken={bearerToken} dbname={dbname} table={table} public_ip={public_ip} onClose={() => setColumnModalOpen(false)} onCreate={(col) => {
         let newCol = { ...col };
         setColumns(prev => [...prev, newCol]);
         setData(prev => prev.map(row => ({ ...row, [newCol.name]: newCol.defaultValue || "" })));
         setColumnModalOpen(false);
       }} />}
-      {RowModalOpen && <Create_Row columns={columns} onClose={() => setRowModalOpen(false)} onCreate={(row) => {
+      {RowModalOpen && <Create_Row columns={columns} dbname={dbname} table={table} onClose={() => setRowModalOpen(false)} onCreate={(row) => {
         const newId = Math.max(0, ...data.map(r => r.id)) + 1;
         setData(prev => [...prev, { id: newId, ...row }]);
         setRowModalOpen(false);

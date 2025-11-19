@@ -1,6 +1,9 @@
 import { useState } from "react"; // <-- import useState
 import { useNavigate } from "react-router-dom";
-
+import { ReactComponent as Blocks } from '../../assets/icons/blocks.svg';
+import { ReactComponent as Hierarchy } from '../../assets/icons/hierarchy-3.svg';
+import { ReactComponent as Careers } from '../../assets/icons/briefcase.svg';
+import { ReactComponent as Handshake } from '../../assets/icons/heart-handshake.svg';
 const NavBar = () => {
   const navigate = useNavigate();
   const [isProductDropdownOpen, setProductDropdownOpen] = useState(false); // <-- state for product dropdown
@@ -30,72 +33,71 @@ const NavBar = () => {
 
         {/* Menu Links */}
         <ul className="hidden md:flex space-x-6 lg:space-x-10 text-gray-700 font-medium h-full items-center">
-          <li onMouseEnter={toggleProductDropdown} onMouseLeave={() => setProductDropdownOpen(false)} className="h-full items-center flex">
+          {/* <li onMouseEnter={toggleProductDropdown} onMouseLeave={() => setProductDropdownOpen(false)} className="h-full items-center flex">
             <a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl cursor-pointer">Product</a>
             {isProductDropdownOpen && (
-              <div className="absolute bg-white border border-gray-300 rounded-md mt-2 w-64 z-50 top-[72px]"> {/* Increased width */}
+              <div className="absolute min-w-max bg-white border border-gray-300 rounded-md mt-2 w-64 z-50 top-[72px]">
                 <div className="grid grid-cols-2 gap-4 p-4">
                   <div>
-                    <h4 className="font-semibold">Product Links</h4>
-                    <ul className="space-y-2">
+                    <h4 className="font-semibold text-xl">Product Links</h4>
+                    <ul className="space-y-4 mt-4">
                       <li className="flex items-center">
                         <img src="/icons/icon1.svg" alt="Icon 1" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 1</a>
+                        <a href="#" className="text-lg">Link 1</a>
                       </li>
                       <li className="flex items-center">
                         <img src="/icons/icon2.svg" alt="Icon 2" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 2</a>
+                        <a href="#" className="text-lg">Link 2</a>
                       </li>
-                      {/* Add more links as needed */}
+
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold">More Links</h4>
-                    <ul className="space-y-2">
+                    <h4 className="font-semibold text-xl">More Links</h4>
+                    <ul className="space-y-4 mt-4">
                       <li className="flex items-center">
                         <img src="/icons/icon3.svg" alt="Icon 3" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 3</a>
+                        <a href="#" className="text-lg">Link 3</a>
                       </li>
                       <li className="flex items-center">
                         <img src="/icons/icon4.svg" alt="Icon 4" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 4</a>
+                        <a href="#" className="text-lg">Link 4</a>
                       </li>
-                      {/* Add more links as needed */}
                     </ul>
                   </div>
                 </div>
               </div>
             )}
-          </li>
+          </li> */}
           <li onMouseEnter={toggleDeveloperDropdown} onMouseLeave={() => setDeveloperDropdownOpen(false)} className="h-full items-center flex">
             <a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl cursor-pointer">Developers</a>
             {isDeveloperDropdownOpen && (
               <div className="absolute bg-white border border-gray-300 rounded-md mt-2 w-auto z-50 top-[72px]"> {/* Increased width */}
-                <div className="grid grid-cols-2 gap-4 p-4">
+                <div className="grid grid-cols-2 gap-8 p-7">
                   <div>
-                    <h4 className="font-semibold">Developers</h4>
-                    <ul className="space-y-2 mt-3">
-                      <li className="flex items-center">
-                        <img src="/icons/icon5.svg" alt="Icon 5" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Documentation</a>
+                    <h4 className="font-semibold text-xl">Developers</h4>
+                    <ul className="space-y-4 mt-4">
+                      <li className="flex items-center cursor-pointer" onClick={() => navigate("/docs")}>
+                        <Hierarchy alt="Icon 5" className="w-7 h-7 mr-2" />
+                        <a className="text-lg">Documentation</a>
                       </li>
-                      <li className="flex items-center">
-                        <img src="/icons/icon6.svg" alt="Icon 6" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Integrations</a>
+                      <li className="flex items-center cursor-pointer" onClick={() => navigate("/devs")}>
+                        <Blocks alt="Icon 6" className="w-7 h-7 mr-2" />
+                        <a className="text-lg">Integrations</a>
                       </li>
                       {/* Add more links as needed */}
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Resources</h4>
-                    <ul className="space-y-2 mt-3">
+                    <h4 className="font-semibold text-xl">Resources</h4>
+                    <ul className="space-y-4 mt-4">
                       <li className="flex items-center">
-                        <img src="/icons/icon7.svg" alt="Icon 7" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Pa</a>
+                        <Handshake alt="Icon 7" className="w-7 h-7 mr-2" />
+                        <a href="#" className="text-lg">Become a Partner</a>
                       </li>
                       <li className="flex items-center">
-                        <img src="/icons/icon8.svg" alt="Icon 8" className="w-4 h-4 mr-2" />
-                        <a href="#" className="text-sm">Link 8</a>
+                        <Careers alt="Icon 8" className="w-7 h-7 mr-2" />
+                        <a href="#" className="text-lg">Careers <span className="text-gray-800">(30)</span></a>
                       </li>
                       {/* Add more links as needed */}
                     </ul>
@@ -104,7 +106,6 @@ const NavBar = () => {
               </div>
             )}
           </li>
-          <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">University</a></li>
           <li onClick={() => navigate("/pricing")} className="cursor-pointer"><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Pricing</a></li>
           <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Docs</a></li>
           <li><a className="hover:text-[#10B981] text-sm sm:text-base md:text-lg lg:text-xl">Blog</a></li>

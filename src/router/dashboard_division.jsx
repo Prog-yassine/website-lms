@@ -26,7 +26,7 @@ const DashboardDivision = () => {
   const { id } = useParams();
   const { organizations } = useContext(AuthContext); // 👈 récupère les orgs du contexte
   const [Logs, setLogs] = useState([]);
-
+  const [dbData, setDbData] = useState([]);
   const bearerToken = localStorage.getItem("token");
   
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -60,6 +60,7 @@ const DashboardDivision = () => {
 
 
   useEffect(() => {
+    setLogs([]);
       const verifyToken = async () => {
         try {
           const res = await fetch("http://localhost:5000/api/data/status/" + id, {
@@ -71,15 +72,15 @@ const DashboardDivision = () => {
           });
   
           const data = await res.json();
+          setDbData(data.dbRows || []);
           setLogs(data.logs || []);
-          console.log(Logs)
         } catch (err) {
           console.error("Error Getting Data token:", err);
         }
       };
   
       verifyToken();
-  }, []);
+  }, [currentProject]);
 
 
   return (
@@ -144,8 +145,8 @@ const DashboardDivision = () => {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 pt-8 pl-8 pr-0">
-          <div className="bg-white border-l border-t border-b border-gray-300 h-full rounded-tl-xl">
+        <div className="flex-1 pl-8 pr-0">
+          <div className="bg-white mt-8 border-l border-t border-b border-gray-300 h-full rounded-tl-xl">
             <div className="w-full h-20 flex items-center px-8 border-b border-gray-300 flex justify-between">
               <div className="w-full h-20 flex items-center space-x-3">
                 <div>
@@ -165,10 +166,10 @@ const DashboardDivision = () => {
               <Routes>
                 <Route path="integrations" element={<Integrations/>} />
                 <Route path="auth/*" element={<Auth divisionId={id} />} />
-                <Route path="" element={<Home divisionId={id} logs={Logs}/>} />
+                <Route path="" element={<Home divisionId={id} logs_data={Logs}/>} />
                 <Route path="storage/*" element={<Storage divisionId={id}/>} />
                 <Route path="setting/*" element={<Setting divisionId={id}/>} />
-                <Route path="database/*" element={<Database divisionId={id} bearerToken={bearerToken} public_ip={currentProject?.ip}/>} />
+                <Route path="database/*" element={<Database divisionId={id} dbData={dbData} bearerToken={bearerToken} public_ip={currentProject?.ip} dbname={currentProject?.dbname}/>} />
               </Routes>
             </div>
           </div>

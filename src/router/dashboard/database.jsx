@@ -15,10 +15,9 @@ const MainPage = () => {
 }
 
 
-const Database = ({ divisionId, bearerToken, public_ip }) => {
+const Database = ({ divisionId, bearerToken, public_ip, dbname, dbData }) => {
 
-    const location = useLocation();
-
+  const location = useLocation();
 
   return (
     <div className="w-full h-screen flex flex-row relative overflow-hidden">
@@ -30,48 +29,20 @@ const Database = ({ divisionId, bearerToken, public_ip }) => {
         <div className="w-full py-6 px-3 border-b border-gray-300">
             <input type="text" placeholder='Search for database...' className='w-full py-2 rounded-lg bg-gray-100 border border-gray-300 px-2 outline-none'/>
             <div className='w-full flex-col space-y-1 py-2'>
-
-                {/* Users */}
-                <div>
-                    <Link to={`/dashboard/division/${divisionId}/database/users`}>
-                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
-                        ${location.pathname.endsWith('/database/users') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
-                            <Database_2 className='w-5 h-5'/>
-                            <h1>users</h1>
-                        </div>
-                    </Link>
-                </div>
-
-                <div>
-                    <Link to={`/dashboard/division/${divisionId}/database/section`}>
-                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
-                        ${location.pathname.endsWith('/database/section') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
-                            <Database_2 className='w-5 h-5'/>
-                            <h1>section</h1>
-                        </div>
-                    </Link>
-                </div>
-
-                <div>
-                    <Link to={`/dashboard/division/${divisionId}/database/block`}>
-                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
-                        ${location.pathname.endsWith('/database/block') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
-                            <Database_2 className='w-5 h-5'/>
-                            <h1>block</h1>
-                        </div>
-                    </Link>
-                </div>
-
-
-                <div>
-                    <Link to={`/dashboard/division/${divisionId}/database/quizzes`}>
-                        <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
-                        ${location.pathname.endsWith('/database/quizzes') ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
-                            <Database_2 className='w-5 h-5'/>
-                            <h1>quizzes</h1>
-                        </div>
-                    </Link>
-                </div>
+                {dbData?.map((db, index) => {
+                    const label = db.tablename;
+                    return (
+                      <div>
+                          <Link key={index} to={`/dashboard/division/${divisionId}/database/${label}`}>
+                              <div className={`w-full px-3 py-1 rounded-lg font-medium flex items-center space-x-2
+                              ${location.pathname.endsWith(`/database/${label}`) ? 'bg-gray-100 text-black' : 'bg-gray-0 text-gray-700'}`}>
+                                  <Database_2 className='w-5 h-5'/>
+                                  <h1>{label}</h1>
+                              </div>
+                          </Link>
+                      </div>
+                    );
+                })}
 
 
             </div>
@@ -83,7 +54,7 @@ const Database = ({ divisionId, bearerToken, public_ip }) => {
       <div className="flex-1 bg-white h-full flex flex-col">
         <Routes>
             <Route path="/" element={<MainPage/>} />
-            <Route path="/:table" element={<Main bearerToken={bearerToken} public_ip={public_ip} />} />
+            <Route path="/:table" element={<Main bearerToken={bearerToken} public_ip={public_ip} dbname={dbname} />} />
         </Routes>
       </div>
     </div>
