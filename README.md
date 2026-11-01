@@ -1,6 +1,8 @@
 # Grupedia
 
-Interface publique d’une plateforme de gestion de l’apprentissage, avec une identité blanche et vert émeraude et des mises en page adaptées au mobile.
+Interface publique d’une plateforme de création d’applications : base de données Postgres, authentification, stockage, templates de développeurs et plugins. L’identité blanche et vert émeraude et les mises en page mobiles sont conservées.
+
+Grupedia donne une base technique à personnaliser autour de son application. Par exemple, pour créer un catalogue de produits : choisir un template, relier la liste et les boutons de détail à la table `products`, ajouter des comptes clients et le stockage des photos, puis prévoir un plugin Stripe pour les paiements. Ce parcours illustre la vision du produit ; les services métier seront développés ensuite.
 
 ## Aperçus
 

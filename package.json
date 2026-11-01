@@ -37,7 +37,7 @@
       "last 1 safari version"
     ]
   },
-  "description": "Grupedia public website and responsive authentication interface.",
+  "description": "Grupedia app platform: databases, authentication, storage, developer templates, and plugins.",
   "engines": {
     "node": ">=20"
   },

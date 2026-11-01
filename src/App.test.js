@@ -62,6 +62,7 @@ test('mobile navigation follows a public link and closes the menu', async () => 
 
 test('unknown addresses offer a useful way back home', () => {
   visit('/missing-page');
-  expect(screen.getByRole('heading', { name: /back on course/i })).toBeInTheDocument();
+  expect(screen.getByText('404 · A small detour')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute('href', '/');
 });

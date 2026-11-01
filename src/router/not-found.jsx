@@ -6,8 +6,8 @@ export default function NotFound() {
     <header className="container placeholder-header"><Brand /></header>
     <main id="main-content" className="placeholder-main not-found-main">
       <span className="eyebrow">404 · A small detour</span>
-      <h1>Let’s get you<br />back on course.</h1>
-      <p>This page doesn’t exist. Your next chapter starts at home.</p>
+      <h1>Let’s get you<br />back to building.</h1>
+      <p>This page doesn’t exist. Find your way back to Grupedia.</p>
       <Link className="btn btn-primary" to="/">Back to home</Link>
     </main>
   </div>;

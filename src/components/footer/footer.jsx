@@ -9,8 +9,8 @@ export default function Footer() {
       <div className="container footer-main">
         <div className="footer-intro">
           <Brand />
-          <p>A home for learning.<br />A foundation for what comes next.</p>
-          <span className="footer-status"><span aria-hidden="true" /> A new chapter is coming</span>
+          <p>A platform for building apps.<br />A foundation for what comes next.</p>
+          <span className="footer-status"><span aria-hidden="true" /> Your next build starts here</span>
         </div>
         <nav className="footer-link-group" aria-label="Product links">
           <h2>Platform</h2>
@@ -32,7 +32,7 @@ export default function Footer() {
       </div>
       <div className="container footer-bottom">
         <p>© {new Date().getFullYear()} Grupedia. All rights reserved.</p>
-        <p>Built for better learning.<span aria-hidden="true"> <LuArrowUpRight /></span></p>
+        <p>Built for the apps you imagine.<span aria-hidden="true"> <LuArrowUpRight /></span></p>
       </div>
     </footer>
   );

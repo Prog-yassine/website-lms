@@ -8,7 +8,7 @@ import Developer from './router/developer';
 import ComingSoon from './router/coming-soon';
 import NotFound from './router/not-found';
 
-const titles = { '/': 'A better home for learning', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon' };
+const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon' };
 
 function RouteEffects() {
   const { pathname, hash } = useLocation();

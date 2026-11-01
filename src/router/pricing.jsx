@@ -9,10 +9,10 @@ const plans = [
     name: "Free",
     price: "0",
     description: "A small beginning. A big possibility.",
-    audience: "For exploring your next learning project.",
+    audience: "For exploring your next web app.",
     features: [
       "1 active project",
-      "5,000 monthly active learners",
+      "5,000 monthly active users",
       "500 MB database storage",
       "1 GB file storage",
       "5 GB bandwidth",
@@ -25,9 +25,9 @@ const plans = [
     name: "Pro",
     price: "25",
     description: "Everything you need to find your stride.",
-    audience: "For growing courses and learning communities.",
+    audience: "For growing apps and independent developers.",
     features: [
-      "100,000 monthly active learners",
+      "100,000 monthly active users",
       "8 GB database storage per project",
       "100 GB file storage",
       "250 GB bandwidth",
@@ -42,7 +42,7 @@ const plans = [
     name: "Team",
     price: "599",
     description: "More room for your whole organization.",
-    audience: "For institutions building together at scale.",
+    audience: "For development teams building together at scale.",
     features: [
       "Everything in Pro",
       "Project-scoped team access",
@@ -63,7 +63,7 @@ const questions = [
       "A Free plan is part of our launch plans, so you can explore the platform before choosing a paid option. For now, you can browse the product preview and see what we’re building.",
   },
   {
-    question: "Can I change plans as my community grows?",
+    question: "Can I change plans as my project grows?",
     answer:
       "Flexible upgrades are part of the planned experience. We’ll share the upgrade process, usage limits, and any additional charges before paid plans become available.",
   },
@@ -92,7 +92,7 @@ export default function Pricing() {
         <header className="pricing-hero container">
           <p className="eyebrow"><span className="pricing-eyebrow-dot" /> A plan for every next step</p>
           <h1>Start small.<br /><span>Grow something great.</span></h1>
-          <p className="pricing-hero-description">From your first course to a thriving learning community.<br className="pricing-desktop-break" /> Choose the space you need, with room for what comes next.</p>
+          <p className="pricing-hero-description">From your first product listing to your next web app.<br className="pricing-desktop-break" /> Choose the space you need, with room for what comes next.</p>
           <div className="pricing-preview-note"><span>Plan preview</span><p>Indicative monthly pricing. Final plans will be confirmed at launch.</p></div>
         </header>
 
@@ -101,7 +101,7 @@ export default function Pricing() {
             <article key={plan.name} className={`pricing-card${plan.featured ? " pricing-card-featured" : ""}`}>
               <div className="pricing-card-top">
                 <span className="pricing-plan-icon"><PlanIcon type={plan.icon} /></span>
-                {plan.featured && <span className="pricing-recommendation">For growing communities</span>}
+                {plan.featured && <span className="pricing-recommendation">For growing apps</span>}
               </div>
               <h2>{plan.name}</h2>
               <p className="pricing-card-description">{plan.description}</p>
@@ -124,7 +124,7 @@ export default function Pricing() {
             <div className="pricing-faq-list">{questions.map(({ question, answer }) => <details key={question}><summary>{question}<span aria-hidden="true" className="pricing-faq-plus">+</span></summary><p>{answer}</p></details>)}</div>
           </div>
         </section>
-        <section className="container pricing-closing"><span aria-hidden="true" className="pricing-closing-mark"><LuSparkles /></span><h2>Every great learning community<br />starts with a first step.</h2><Link className="btn btn-primary" to="/register">Take a look around <span aria-hidden="true"><LuArrowUpRight /></span></Link></section>
+        <section className="container pricing-closing"><span aria-hidden="true" className="pricing-closing-mark"><LuSparkles /></span><h2>Every great app<br />starts with a first step.</h2><Link className="btn btn-primary" to="/register">Take a look around <span aria-hidden="true"><LuArrowUpRight /></span></Link></section>
       </main>
       <Footer />
     </div>

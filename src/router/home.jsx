@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import {
   LuArrowRight, LuArrowUpRight, LuBookOpen, LuBraces, LuCheck,
-  LuChevronRight, LuCirclePlay, LuFolderOpen, LuGraduationCap,
-  LuLayers, LuLeaf, LuRadio, LuShieldCheck, LuSparkles,
+  LuChevronRight, LuCirclePlay, LuFolderOpen,
+  LuLayers, LuLeaf, LuDatabase, LuShieldCheck, LuSparkles,
 } from 'react-icons/lu';
 import NavBar from '../components/nav/nav';
 import Footer from '../components/footer/footer';
@@ -10,34 +10,34 @@ import './home.css';
 
 const features = [
   {
-    number: '01', icon: LuBookOpen, title: 'A home for every course.',
-    description: 'Bring lessons, assessments, and learning resources together in one thoughtful, organized space.',
-    detail: 'Courses & assessments',
+    number: '01', icon: LuDatabase, title: 'Your data. A solid foundation.',
+    description: 'Store products, profiles, and the data behind your app in Postgres. Connect your tables to the pages that use them.',
+    detail: 'Postgres database',
   },
   {
-    number: '02', icon: LuShieldCheck, title: 'The right people. The right access.',
-    description: 'A foundation for authentication, student accounts, and educator permissions, shaped around your community.',
+    number: '02', icon: LuShieldCheck, title: 'Your app. Their own account.',
+    description: 'Add sign-up, sign-in, and user permissions to your own branded app, with authentication connected to your data.',
     detail: 'Authentication & roles',
   },
   {
-    number: '03', icon: LuFolderOpen, title: 'More room for your ideas.',
-    description: 'Keep videos, documents, and course materials connected to the learning experiences they belong to.',
+    number: '03', icon: LuFolderOpen, title: 'A place for every upload.',
+    description: 'Store product photos, profile images, and documents. Connect uploads to your app and display files where they belong.',
     detail: 'Files & storage',
   },
   {
-    number: '04', icon: LuRadio, title: 'Learning is better together.',
-    description: 'Make space for shared work, timely feedback, and the conversations that turn a lesson into understanding.',
-    detail: 'Realtime collaboration',
+    number: '04', icon: LuLayers, title: 'A template. A head start.',
+    description: 'Start with a frontend template made by a developer, then customize the pages, content, and branding to make it yours.',
+    detail: 'Developer-made templates',
   },
   {
-    number: '05', icon: LuSparkles, title: 'A little help. A new perspective.',
-    description: 'Explore a place for AI in education, from creating teaching materials to supporting a learner’s next step.',
-    detail: 'AI-powered possibilities',
+    number: '05', icon: LuBraces, title: 'Give every button a purpose.',
+    description: 'Bind a product list to database rows, connect a details button to a page, and link a form to the data it should save.',
+    detail: 'Interface & data connections',
   },
   {
-    number: '06', icon: LuBraces, title: 'Your data. Your possibilities.',
-    description: 'A Postgres and API foundation designed to connect your learning platform with the tools around it.',
-    detail: 'Database & developer tools',
+    number: '06', icon: LuSparkles, title: 'Add what your app needs.',
+    description: 'Extend your project with developer plugins, such as Stripe for payments. Choose the services that fit your app.',
+    detail: 'Plugins & integrations',
   },
 ];
 
@@ -51,40 +51,40 @@ function PlatformPreview() {
       <div className="home-preview-frame" aria-hidden="true">
         <div className="home-preview-bar">
           <div className="home-browser-dots"><i /><i /><i /></div>
-          <span>your learning space</span><LuLayers />
+          <span>your application workspace</span><LuLayers />
         </div>
         <div className="home-preview-content">
           <div className="home-preview-rail">
             <div className="home-preview-mark"><LuLeaf /></div>
             <div className="home-preview-rail-item home-preview-rail-active"><LuBookOpen /></div>
-            <div className="home-preview-rail-item"><LuGraduationCap /></div>
+            <div className="home-preview-rail-item"><LuBraces /></div>
             <div className="home-preview-rail-item"><LuFolderOpen /></div>
             <div className="home-preview-rail-item"><LuSparkles /></div>
             <div className="home-preview-rail-avatar">JD</div>
           </div>
           <div className="home-preview-course">
-            <div className="home-preview-breadcrumb">Your courses <LuChevronRight /> Design foundations</div>
+            <div className="home-preview-breadcrumb">Your app <LuChevronRight /> Product catalog</div>
             <div className="home-preview-course-heading">
-              <div><span className="home-preview-overline">KEEP YOUR CURIOSITY GROWING</span><h2>A new way to see.</h2></div>
-              <div className="home-preview-course-icon"><LuBookOpen /></div>
+              <div><span className="home-preview-overline">START WITH A DEVELOPER TEMPLATE</span><h2>A storefront of your own.</h2></div>
+              <div className="home-preview-course-icon"><LuDatabase /></div>
             </div>
             <div className="home-preview-cover">
               <div className="home-preview-cover-copy">
-                <span>LEARNING PATH / 01</span><strong>Good ideas<br />start here.</strong>
-                <span className="home-preview-cover-tag">Design foundations</span>
+                <span>STOREFRONT TEMPLATE / 01</span><strong>Your products.<br />Your storefront.</strong>
+                <span className="home-preview-cover-tag">Product listing app</span>
               </div>
               <div className="home-preview-art"><i /><i /><i /><i /></div>
               <span className="home-preview-play"><LuCirclePlay /></span>
             </div>
-            <div className="home-preview-lessons-heading"><strong>Your learning path</strong><span>Sample course</span></div>
-            <div className="home-preview-lesson"><span className="home-preview-check"><LuCheck /></span><span>Start with a fresh perspective</span><span>01</span></div>
-            <div className="home-preview-lesson"><span className="home-preview-check home-preview-check-outline"><LuCirclePlay /></span><span>Find the ideas all around you</span><span>02</span></div>
+            <div className="home-preview-lessons-heading"><strong>Connect your app</strong><span>Illustrative setup</span></div>
+            <div className="home-preview-lesson"><span className="home-preview-check"><LuCheck /></span><span>products table → product cards</span><span>01</span></div>
+            <div className="home-preview-lesson"><span className="home-preview-check home-preview-check-outline"><LuCirclePlay /></span><span>View product → details page</span><span>02</span></div>
             <div className="home-preview-progress"><span /></div>
-            <div className="home-preview-bottom"><span>One small step. A world of possibility.</span><LuArrowUpRight /></div>
+            <div className="home-preview-bottom"><span>Add accounts, file storage, and a Stripe plugin.</span><LuArrowUpRight /></div>
           </div>
         </div>
       </div>
-      <div className="home-preview-note"><span><LuSparkles /></span><div><strong>A space to learn. Room to grow.</strong><p>An illustration of the experience we’re building.</p></div></div>
+      <div className="home-preview-note"><span><LuSparkles /></span><div><strong>One template. Your own application.</strong><p>An illustration of the workflow we’re building.</p></div></div>
     </figure>
   );
 }
@@ -96,28 +96,28 @@ function Home() {
       <main id="main-content">
         <section className="home-hero container" aria-labelledby="home-heading">
           <div className="home-hero-copy">
-            <Link className="home-announcement" to="/coming-soon"><span className="home-status-dot" /><span>A new chapter for learning</span><LuArrowUpRight /></Link>
-            <h1 id="home-heading">Build your LMS.<br />Put <span>learning</span><br />first.</h1>
-            <p className="home-hero-description">Big ideas deserve a better place to grow. We’re building a learning platform that brings your courses, your people, and your tools together.</p>
-            <div className="home-hero-actions"><Link className="btn btn-primary" to="/register">Start your journey <LuArrowRight /></Link><a className="home-text-link" href="#platform">Explore the platform <LuArrowUpRight /></a></div>
-            <div className="home-hero-footnote"><span className="home-tiny-leaf"><LuLeaf /></span><span>Built around educators. Inspired by learners.</span></div>
+            <Link className="home-announcement" to="/coming-soon"><span className="home-status-dot" /><span>Your next app starts here</span><LuArrowUpRight /></Link>
+            <h1 id="home-heading">Build your app.<br />Make it <span>your</span><br />own.</h1>
+            <p className="home-hero-description">Start with a developer template. Connect your database, authentication, and storage. Add plugins like Stripe, then customize every part of your app.</p>
+            <div className="home-hero-actions"><Link className="btn btn-primary" to="/register">Start your project <LuArrowRight /></Link><a className="home-text-link" href="#platform">Explore the platform <LuArrowUpRight /></a></div>
+            <div className="home-hero-footnote"><span className="home-tiny-leaf"><LuLeaf /></span><span>Your frontend. Your backend. Connected.</span></div>
           </div>
           <PlatformPreview />
         </section>
 
         <section className="home-principles" aria-label="Our approach">
           <div className="container home-principles-inner">
-            <p>Less complexity.<br /><strong>More possibility.</strong></p>
-            <div><LuBookOpen /><span>Learning at the center</span></div>
-            <div><LuLayers /><span>Connected by design</span></div>
-            <div><LuLeaf /><span>Space to grow</span></div>
+            <p>One idea.<br /><strong>All the building blocks.</strong></p>
+            <div><LuBookOpen /><span>Your data, connected</span></div>
+            <div><LuLayers /><span>Your template, customized</span></div>
+            <div><LuLeaf /><span>Your plugins, your choice</span></div>
           </div>
         </section>
 
         <section className="home-platform container" id="platform" aria-labelledby="platform-heading">
           <div className="home-section-top">
-            <div><span className="eyebrow">ONE PLATFORM. A BIGGER PICTURE.</span><h2 className="section-heading" id="platform-heading">Everything connects.<br /><span>So learning can happen.</span></h2></div>
-            <p>From that first lesson to the next big idea, our vision brings the essentials of a modern LMS into one place.</p>
+            <div><span className="eyebrow">THE BACKEND BLOCKS. THE FRONTEND FREEDOM.</span><h2 className="section-heading" id="platform-heading">The building blocks.<br /><span>Your application.</span></h2></div>
+            <p>Build a product catalog, a member portal, or your next SaaS. Bring the frontend and the services behind it together.</p>
           </div>
           <div className="home-feature-grid">
             {features.map(({ number, icon: Icon, title, description, detail }) => (
@@ -127,35 +127,35 @@ function Home() {
               </article>
             ))}
           </div>
-          <p className="home-development-note"><span className="home-status-dot" /> A platform in the making. These features describe our product direction and are not yet available.</p>
+          <p className="home-development-note"><span className="home-status-dot" /> A platform in the making. Templates, connections, and plugins are part of our upcoming product.</p>
         </section>
 
         <section className="home-connections container" aria-labelledby="connections-heading">
           <div className="home-connections-copy">
-            <span className="eyebrow">YOUR TOOLS, IN THE PICTURE</span>
-            <h2 className="section-heading" id="connections-heading">Your world.<br /><span>A little more connected.</span></h2>
-            <p>Great learning doesn’t happen in a silo. We’re exploring connections with the tools educators and developers already love.</p>
-            <Link className="home-text-link" to="/coming-soon">Follow what’s next <LuArrowUpRight /></Link>
+            <span className="eyebrow">FROM TEMPLATE TO YOUR OWN APP</span>
+            <h2 className="section-heading" id="connections-heading">A product listing app.<br /><span>Connected, your way.</span></h2>
+            <p>Choose a storefront template. Connect product cards to your database and “View product” buttons to a details page. Add customer accounts, upload product photos, and extend checkout with a Stripe plugin.</p>
+            <Link className="home-text-link" to="/devs">Explore the developer ecosystem <LuArrowUpRight /></Link>
           </div>
-          <div className="home-integrations" aria-label="Tools we are exploring">
+          <div className="home-integrations" aria-label="Illustrative product app connections">
             <div className="home-integration-orbit">
               <span className="home-integration-chip home-chip-postgres"><LuLayers /> PostgreSQL</span>
-              <span className="home-integration-chip home-chip-openai"><LuSparkles /> OpenAI</span>
+              <span className="home-integration-chip home-chip-openai"><LuSparkles /> Stripe plugin</span>
               <span className="home-integration-brand"><LuLeaf /><span>grupedia</span></span>
-              <span className="home-integration-chip home-chip-video"><LuCirclePlay /> Video & media</span>
-              <span className="home-integration-chip home-chip-api"><LuBraces /> Your API</span>
+              <span className="home-integration-chip home-chip-video"><LuFolderOpen /> Product photos</span>
+              <span className="home-integration-chip home-chip-api"><LuBraces /> Your template</span>
             </div>
-            <p>Integration concepts · availability to be announced</p>
+            <p>Example workflow · templates and plugins coming soon</p>
           </div>
         </section>
 
         <section className="home-cta container" aria-labelledby="cta-heading">
           <div className="home-cta-decoration" aria-hidden="true"><i /><i /><i /></div>
           <div className="home-cta-content">
-            <span className="eyebrow">LET’S MAKE ROOM FOR BETTER LEARNING</span>
-            <h2 id="cta-heading">Your next chapter<br />starts with an idea.</h2>
-            <p>We’re building Grupedia for people who believe learning can be better. Be part of what comes next.</p>
-            <Link className="btn btn-primary" to="/register">Start your journey <LuArrowRight /></Link>
+            <span className="eyebrow">YOUR IDEA. YOUR FRONTEND. YOUR FOUNDATION.</span>
+            <h2 id="cta-heading">Your next idea.<br />An app of your own.</h2>
+            <p>From a product catalog to your next SaaS, start with the building blocks and shape the application you have in mind.</p>
+            <Link className="btn btn-primary" to="/register">Start your project <LuArrowRight /></Link>
           </div>
           <span className="home-cta-corner" aria-hidden="true"><LuLeaf /></span>
         </section>

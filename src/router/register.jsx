@@ -36,7 +36,7 @@ export default function Register() {
 
   return (
     <AuthLayout mode="register">
-      <div className="auth-intro"><span className="eyebrow">MAKE ROOM FOR WHAT’S NEXT</span><h1>Start something<br />great<span>.</span></h1><p>Create your account and bring your learning community together.</p></div>
+      <div className="auth-intro"><span className="eyebrow">MAKE ROOM FOR WHAT’S NEXT</span><h1>Start something<br />great<span>.</span></h1><p>Create your account and start building an app that works your way.</p></div>
       <form onSubmit={handleSubmit} className="auth-form auth-register-form" aria-busy={isLoading}>
         <div className="auth-field"><label htmlFor="register-name">Full name</label><input id="register-name" name="name" type="text" autoComplete="name" placeholder="Alex Morgan" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} disabled={isLoading} /></div>
         <div className="auth-field"><label htmlFor="register-email">Email</label><input id="register-email" name="email" type="email" autoComplete="email" placeholder="you@yourorganization.com" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} disabled={isLoading} /></div>
@@ -44,7 +44,7 @@ export default function Register() {
         {error && <p className="auth-error" role="alert">{error}</p>}
         <button className="btn btn-primary auth-submit" type="submit" disabled={isLoading}>{isLoading ? <><span className="auth-spinner" aria-hidden="true" /> Creating account…</> : <>Create account <LuArrowRight aria-hidden="true" /></>}</button>
       </form>
-      <p className="auth-switch">Already part of the community? <Link to="/login">Sign in <LuArrowRight aria-hidden="true" /></Link></p>
+      <p className="auth-switch">Already have an account? <Link to="/login">Sign in <LuArrowRight aria-hidden="true" /></Link></p>
       <p className="auth-assurance">One account. A world of possibilities.</p>
     </AuthLayout>
   );
