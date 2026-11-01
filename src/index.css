@@ -1,59 +1,32 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
-* {
-  scrollbar-width: none;         /* hide in Firefox */
-  -ms-overflow-style: none;      /* hide in IE11 */
-}
-
-/* WebKit (Chrome, Safari, Edge) */
-*::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* === Rendre visible le scrollbar uniquement pour #scrollbar === */
-/* Firefox */
-#scrollbar {
-  scrollbar-width: thin;         /* 'auto'|'thin'|'none' */
-}
-
-/* WebKit — taille et style du thumb/track */
-#scrollbar::-webkit-scrollbar {
-  width: 10px;                   /* width for vertical scrollbar */
-  height: 10px;                  /* height for horizontal scrollbar */
-}
-
-#scrollbar::-webkit-scrollbar-track {
-  background: transparent;       /* track background */
-}
-
-#scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.25);  /* thumb color */
-  border-radius: 9999px;
-  border: 2px solid transparent; /* add spacing if needed */
-}
-
-/* optionnel : change couleur au survol */
-#scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.35);
-}
-
-
-/* Hide scrollbar for IE, Edge and Firefox */
-
-
-
-body {
-  font-family: 'Inter', sans-serif;
-}
-
-
-input:-webkit-autofill {
-  box-shadow: 0 0 0px 1000px #d1fae5 inset !important; /* green background */
-  -webkit-text-fill-color: #065f46 !important; /* optional: dark green text */
-  transition: background-color 5000s ease-in-out 0s;
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;750;800&display=swap');
+:root { --ink:#142b24; --muted:#68766f; --green:#147d59; --mint:#d9f4e6; --line:#e2e9e4; --surface:#f6f8f5; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:var(--ink); background:#fff; font-synthesis:none; text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; min-width:320px; }
+button,input,select,textarea { font:inherit; }
+button,a,input { -webkit-tap-highlight-color:transparent; }
+button { cursor:pointer; }
+button:disabled { cursor:wait; opacity:.65; }
+a { color:inherit; text-decoration:none; }
+button,a { touch-action:manipulation; }
+img,svg { max-width:100%; }
+img { display:block; }
+button svg,a svg { flex-shrink:0; }
+h1,h2,h3,p { margin-top:0; }
+h1,h2,h3 { text-wrap:balance; }
+p { line-height:1.75; }
+::selection { background:var(--mint); color:var(--ink); }
+:focus-visible { outline:3px solid var(--green); outline-offset:5px; }
+[id] { scroll-margin-top:100px; }
+.container { width:min(1180px,calc(100% - 48px)); margin-inline:auto; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:46px; padding:12px 21px; border:1px solid transparent; border-radius:9px; font-size:14px; font-weight:600; line-height:1.4; transition:background .18s,border-color .18s,box-shadow .18s; text-align:center; }
+.btn-primary { color:white; background:var(--green); border-color:var(--green); box-shadow:0 2px 3px #142b2410; }
+.btn-primary:hover { background:#106848; border-color:#106848; }
+.btn-secondary { background:#fff; color:var(--ink); border-color:#d5dfd8; }
+.btn-secondary:hover { background:var(--surface); border-color:#b8c9bd; }
+.eyebrow { display:block; color:var(--green); font-size:11px; line-height:1.5; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+.section-heading { font-size:clamp(30px,3.6vw,44px); letter-spacing:-.045em; font-weight:600; line-height:1.18; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.skip-link { position:fixed; top:10px; left:10px; z-index:100; padding:12px 18px; background:var(--ink); color:white; border-radius:6px; transform:translateY(-150%); }
+.skip-link:focus { transform:translateY(0); }
+@media(max-width:600px) { .container { width:calc(100% - 36px); } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }

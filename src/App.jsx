@@ -1,46 +1,43 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './router/home';
-
-
-import Organization from './router/organization';
-import NewOrganization from './router/new_organization';
-import NewDivision from './router/new_division';
-import DashboardDivision from './router/dashboard_division';
 import Login from './router/login';
-import Pricing from './router/pricing';
-import ProtectedRoute from "./protected"; // <-- import
-import Division from './router/division';
-import Developer from './router/developer';
 import Register from './router/register';
+import Pricing from './router/pricing';
+import Developer from './router/developer';
+import ComingSoon from './router/coming-soon';
+import NotFound from './router/not-found';
 
+const titles = { '/': 'A better home for learning', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon' };
 
-function App() {
-
-
-  return (
-    <Router>
-      <div className="selection:bg-emerald-400">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/devs" element={< Developer/>} />
-
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard/org" element={<Organization />} />
-            <Route path="/dashboard/org/:id" element={<Division />} />
-            <Route path="/dashboard/org/new" element={<NewOrganization />} />
-            <Route path="/dashboard/org/:id/division/new" element={<NewDivision />} />
-            <Route path="/dashboard/division/:id/*" element={<DashboardDivision />} />
-          </Route>
-        </Routes>
-      </div>
-    </Router>
-  );
+function RouteEffects() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    document.title = `${titles[pathname] || 'Page not found'} · Grupedia`;
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
 }
 
-export default App;
+export function AppRoutes() {
+  return <>
+    <RouteEffects />
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/devs" element={<Developer />} />
+      <Route path="/docs" element={<Developer />} />
+      <Route path="/coming-soon" element={<ComingSoon />} />
+      <Route path="/dashboard/*" element={<Navigate to="/coming-soon" replace />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </>;
+}
+
+export default function App() {
+  return <BrowserRouter><AppRoutes /></BrowserRouter>;
+}

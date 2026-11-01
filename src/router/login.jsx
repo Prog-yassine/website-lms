@@ -1,149 +1,82 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LuArrowRight, LuEye, LuEyeOff, LuShieldCheck } from "react-icons/lu";
+import AuthLayout from "../components/auth/AuthLayout";
+import { postAuth } from "../lib/api";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
+export default function Login() {
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState("");
-  const [loginType, setLoginType] = useState("root"); // "root" ou "iam"
+  const [loginType, setLoginType] = useState("root");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const request = useRef(null);
   const navigate = useNavigate();
+  const registered = Boolean(location.state?.registered);
+  useEffect(() => () => request.current?.abort(), []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const selectType = (type) => {
+    if (isLoading || type === loginType) return;
+    setLoginType(type);
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+    setError("");
+  };
 
-    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const handleTabKey = (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key) || isLoading) return;
+    event.preventDefault();
+    const type = event.key === "Home" ? "root" : event.key === "End" ? "iam" :
+      loginType === "root" ? "iam" : "root";
+    selectType(type);
+    event.currentTarget.querySelector(`#${type === "root" ? "owner" : "iam"}-tab`)?.focus();
+  };
 
-    const endpoint =
-      loginType === "root"
-        ? `${baseUrl}/api/auth/root`
-        : `${baseUrl}/api/auth/iam`;
-
-    // Prepare body depending on type
-    const body =
-      loginType === "root"
-        ? { email, password }
-        : { id: email, secret: password }; // reusing same state vars
-
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (request.current) return;
+    setError("");
+    setIsLoading(true);
+    const controller = new AbortController();
+    request.current = controller;
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Login failed");
-        return;
+      const body = loginType === "root" ? { email: email.trim(), password } : { id: email.trim(), secret: password };
+      const data = await postAuth(loginType, body, { signal: controller.signal });
+      if (typeof data.token !== "string" || !data.token.trim()) {
+        throw new Error("The server did not return a valid session. Please try again.");
       }
-
       localStorage.setItem("token", data.token);
-      navigate("/dashboard/org");
+      navigate("/coming-soon", { replace: true });
     } catch (err) {
-      console.error(err);
-      alert("Server error");
+      if (err.name !== "AbortError") setError(err.message || "We couldn't sign you in. Please try again.");
+    } finally {
+      request.current = null;
+      if (!controller.signal.aborted) setIsLoading(false);
     }
   };
 
-
-
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left side */}
-      <div className="flex flex-col gap-6 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-semibold text-lg cursor-pointer"
-          >
-            <div className="text-white flex items-center justify-center rounded-md">
-              <img src="./logo.svg" className="w-10 h-10" />
-            </div>
-            Grupedia
-          </a>
-        </div>
-
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">
-            <h2 className="text-4xl font-bold">Welcome back</h2>
-            <h2 className="text-sm font-bold text-gray-400">
-              Sign in to your account
-            </h2>
-
-            {/* Switch Root / IAM */}
-            <div className="flex gap-0 my-4">
-              <button
-                type="button"
-                onClick={() => setLoginType("root")}
-                className={`flex-1 py-2 cursor-pointer ${
-                  loginType === "root"
-                    ? "border-b-3 border-emerald-500 text-emerald-500"
-                    : "border-b-3 border-white text-gray-700"
-                }`}
-              >
-                Root
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginType("iam")}
-                className={`flex-1 py-2 cursor-pointer ${
-                  loginType === "iam"
-                    ? "border-b-3 border-emerald-500 text-emerald-500"
-                    : "border-b-3 border-white text-gray-700"
-                }`}
-              >
-                IAM
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4 my-8">
-              <div>
-                <label className="block text-lg font-medium mb-1">
-                    {loginType === "root" ? "Email" : "ID"}
-                </label>
-                <input
-                    type={loginType === "root" ? "email" : "number"}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:ring focus:ring-emerald-200 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-lg font-medium mb-1">
-                    {loginType === "root" ? "Password" : "Secret"}
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:ring focus:ring-emerald-200 outline-none"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-md bg-emerald-500 text-white py-2 font-medium hover:bg-emerald-700 transition cursor-pointer"
-              >
-                Sign In
-              </button>
-            </form>
-
-            <p className="mt-4 text-center text-sm text-gray-500">
-              Don’t have an account?{" "}
-              <a onClick={() => navigate('/register')} className="text-emerald-600 hover:underline cursor-pointer">
-                Sign up
-              </a>
-            </p>
-          </div>
-        </div>
+    <AuthLayout>
+      <div className="auth-intro"><span className="eyebrow">YOUR LEARNING JOURNEY CONTINUES</span><h1>Welcome back<span>.</span></h1><p>Good to see you again. Let’s pick up where you left off.</p></div>
+      {registered && <p className="auth-success" role="status">Your account is ready. Sign in to get started.</p>}
+      <div className="auth-tabs" role="tablist" aria-label="Account type" onKeyDown={handleTabKey}>
+        <button id="owner-tab" role="tab" type="button" tabIndex={loginType === "root" ? 0 : -1} aria-selected={loginType === "root"} aria-controls="auth-login-panel" onClick={() => selectType("root")} disabled={isLoading}>Account owner</button>
+        <button id="iam-tab" role="tab" type="button" tabIndex={loginType === "iam" ? 0 : -1} aria-selected={loginType === "iam"} aria-controls="auth-login-panel" onClick={() => selectType("iam")} disabled={isLoading}>IAM user</button>
       </div>
-
-      {/* Right side image */}
-      <div className="bg-gray-100 relative hidden lg:block"></div>
-    </div>
+      <div id="auth-login-panel" role="tabpanel" aria-labelledby={loginType === "root" ? "owner-tab" : "iam-tab"}>
+        <p className="auth-account-help">{loginType === "root" ? "Manage your organization and learning spaces." : "Use the credentials provided by your organization."}</p>
+        <form onSubmit={handleSubmit} className="auth-form" aria-busy={isLoading}>
+          <div className="auth-field"><label htmlFor="login-identity">{loginType === "root" ? "Email" : "IAM ID"}</label><input id="login-identity" name={loginType === "root" ? "email" : "id"} type={loginType === "root" ? "email" : "text"} inputMode={loginType === "root" ? "email" : "numeric"} autoComplete="username" placeholder={loginType === "root" ? "you@yourorganization.com" : "Your IAM user ID"} value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} disabled={isLoading} aria-describedby={error ? "login-error" : undefined} /></div>
+          <div className="auth-field"><label htmlFor="login-password">{loginType === "root" ? "Password" : "Secret"}</label><div className="auth-password"><input id="login-password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder={loginType === "root" ? "Enter your password" : "Enter your IAM secret"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} aria-describedby={error ? "login-error" : undefined} /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} disabled={isLoading}>{showPassword ? <LuEyeOff aria-hidden="true" /> : <LuEye aria-hidden="true" />}</button></div></div>
+          {error && <p className="auth-error" id="login-error" role="alert">{error}</p>}
+          <button className="btn btn-primary auth-submit" type="submit" disabled={isLoading}>{isLoading ? <><span className="auth-spinner" aria-hidden="true" /> Signing in…</> : <>Sign in <LuArrowRight aria-hidden="true" /></>}</button>
+        </form>
+      </div>
+      <p className="auth-switch">New to Grupedia? <Link to="/register">Create an account <LuArrowRight aria-hidden="true" /></Link></p>
+      <p className="auth-assurance"><LuShieldCheck aria-hidden="true" /> Your next chapter starts here.</p>
+    </AuthLayout>
   );
-};
-
-export default Login;
+}

@@ -1,70 +1,51 @@
-# Getting Started with Create React App
+# Grupedia
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interface publique d’une plateforme de gestion de l’apprentissage, avec une identité blanche et vert émeraude et des mises en page adaptées au mobile.
 
-## Available Scripts
+## Aperçus
 
-In the project directory, you can run:
+![Accueil sur ordinateur](docs/previews/home-desktop.png)
 
-### `npm start`
+[Voir l’aperçu mobile](docs/previews/home-mobile.png)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Périmètre
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Cette version porte uniquement sur les interfaces : accueil, tarifs, présentation développeurs, connexion et inscription. Toutes les anciennes pages internes (organisations, projets, bases de données, stockage, paramètres et administration) sont supprimées. Les adresses `/dashboard/*` redirigent vers `/coming-soon`, sans charger de données ni vérifier une session auprès du serveur. Cette page d’attente ne contient aucune donnée privée et reste accessible pour prévisualiser le résultat. Les fonctionnalités métier seront développées séparément.
 
-### `npm test`
+Les illustrations de produit, tarifs et intégrations sont des présentations du concept, pas des services disponibles ni des offres souscriptibles.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Démarrage
 
-### `npm run build`
+Node.js 20 ou version ultérieure et npm sont nécessaires.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```sh
+npm ci
+cp .env.example .env.local
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Le site est accessible sur `http://localhost:3000`. La vitrine et la page Coming soon fonctionnent sans API.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Les formulaires conservent les contrats de connexion existants : `POST /api/auth/root`, `POST /api/auth/iam` et `POST /api/auth/register`. Définir `REACT_APP_API_URL` dans `.env.local` pour utiliser le serveur existant (par défaut `http://localhost:5000`). La connexion réussie mène à `/coming-soon`, et l’inscription réussie revient à la connexion avec confirmation. Aucun serveur ni nouvelle logique métier ne sont inclus dans ce dépôt.
 
-### `npm run eject`
+Les variables `REACT_APP_*` sont publiques dans le navigateur : ne jamais y placer de secret. Les fichiers `.env` locaux ne sont plus suivis par Git.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Vérification et livraison
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```sh
+CI=true npm test -- --watchAll=false --runInBand
+npm run build
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Le dossier `build/` contient les fichiers à héberger. L’hébergement doit rediriger les URL inconnues vers `index.html` pour permettre l’ouverture directe de `/login`, `/pricing` ou d’anciennes URL de tableau de bord. Cette branche ne déploie rien automatiquement.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Le projet conserve React et Create React App pour limiter le changement à l’interface. Les styles sont compilés localement : aucune dépendance au script Tailwind chargé à l’exécution. Les polices Inter ont une alternative système si Google Fonts n’est pas disponible.
 
-## Learn More
+## Structure
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- `src/App.jsx` : routes publiques, titres et redirections.
+- `src/router/` : pages de présentation, connexion, inscription et attente.
+- `src/components/` : navigation mobile, pied de page, identité et cadre de connexion.
+- `src/lib/api.js` : client des formulaires d’authentification existants.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Les anciennes pages restent récupérables dans l’historique Git.

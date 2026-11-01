@@ -1,0 +1,124 @@
+.site-footer {
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 56px;
+  padding-top: 62px;
+  padding-bottom: 56px;
+}
+
+.footer-intro p {
+  margin: 15px 0 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #5b6a60;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+.footer-status > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #258059;
+  box-shadow: 0 0 0 3px #e7f4ec;
+}
+
+.footer-link-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-link-group h2 {
+  margin: 11px 0 15px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.footer-link-group a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.footer-link-group a:hover {
+  color: var(--green);
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  min-height: 78px;
+  border-top: 1px solid var(--line);
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.footer-bottom p:last-child {
+  color: var(--ink);
+}
+
+.footer-bottom span {
+  padding-left: 6px;
+  color: var(--green);
+}
+
+@media (max-width: 850px) {
+  .footer-main {
+    gap: 30px;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    padding-top: 40px;
+    padding-bottom: 38px;
+  }
+
+  .footer-intro {
+    grid-column: 1 / -1;
+  }
+
+  .footer-intro p {
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+  .footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 27px 18px;
+  }
+
+  .footer-link-group a {
+    min-height: 42px;
+  }
+
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    padding-top: 22px;
+    padding-bottom: 25px;
+  }
+}

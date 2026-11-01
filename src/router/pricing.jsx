@@ -1,183 +1,132 @@
+import { LuArrowUpRight, LuSparkles } from "react-icons/lu";
+import { Link } from "react-router-dom";
 import NavBar from "../components/nav/nav";
-import { ReactComponent as Check } from '../assets/icons/check.svg';
-import ComputeCalculator from "../components/calculator/compute_calculator";
-import { ReactComponent as BrandYoutubeFilled } from '../assets/icons/brand-youtube-filled.svg';
-import { ReactComponent as BrandDiscord } from '../assets/icons/brand-discord.svg';
+import Footer from "../components/footer/footer";
+import "./pricing.css";
 
+const plans = [
+  {
+    name: "Free",
+    price: "0",
+    description: "A small beginning. A big possibility.",
+    audience: "For exploring your next learning project.",
+    features: [
+      "1 active project",
+      "5,000 monthly active learners",
+      "500 MB database storage",
+      "1 GB file storage",
+      "5 GB bandwidth",
+      "Community support",
+    ],
+    action: "Start with Free",
+    icon: "sprout",
+  },
+  {
+    name: "Pro",
+    price: "25",
+    description: "Everything you need to find your stride.",
+    audience: "For growing courses and learning communities.",
+    features: [
+      "100,000 monthly active learners",
+      "8 GB database storage per project",
+      "100 GB file storage",
+      "250 GB bandwidth",
+      "Daily backups, retained for 7 days",
+      "Email support",
+    ],
+    action: "Explore Pro",
+    icon: "bolt",
+    featured: true,
+  },
+  {
+    name: "Team",
+    price: "599",
+    description: "More room for your whole organization.",
+    audience: "For institutions building together at scale.",
+    features: [
+      "Everything in Pro",
+      "Project-scoped team access",
+      "Read-only access controls",
+      "Daily backups, retained for 14 days",
+      "28-day log retention",
+      "Priority email support",
+    ],
+    action: "Explore Team",
+    icon: "team",
+  },
+];
 
+const questions = [
+  {
+    question: "Can I try Grupedia for free?",
+    answer:
+      "A Free plan is part of our launch plans, so you can explore the platform before choosing a paid option. For now, you can browse the product preview and see what we’re building.",
+  },
+  {
+    question: "Can I change plans as my community grows?",
+    answer:
+      "Flexible upgrades are part of the planned experience. We’ll share the upgrade process, usage limits, and any additional charges before paid plans become available.",
+  },
+  {
+    question: "Are these the final prices and features?",
+    answer:
+      "These plans are an early preview, not a paid offer. Final prices, included features, and availability will be confirmed at launch. No payment is collected on this website.",
+  },
+];
 
-import Footer from '../components/footer/footer';
-
-
-const Pricing = () => {
+function PlanIcon({ type }) {
   return (
-    <div className="w-full font-sans min-h-screen bg-gray-50">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {type === "sprout" && <><path d="M12 21v-9M12 14C6 14 3 11 3 5c6 0 9 3 9 9ZM12 11c0-5 3-8 9-8 0 6-3 9-9 9" /></>}
+      {type === "bolt" && <path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z" />}
+      {type === "team" && <><circle cx="9" cy="8" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5.2" /></>}
+    </svg>
+  );
+}
+
+export default function Pricing() {
+  return (
+    <div className="pricing-page">
       <NavBar />
+      <main id="main-content">
+        <header className="pricing-hero container">
+          <p className="eyebrow"><span className="pricing-eyebrow-dot" /> A plan for every next step</p>
+          <h1>Start small.<br /><span>Grow something great.</span></h1>
+          <p className="pricing-hero-description">From your first course to a thriving learning community.<br className="pricing-desktop-break" /> Choose the space you need, with room for what comes next.</p>
+          <div className="pricing-preview-note"><span>Plan preview</span><p>Indicative monthly pricing. Final plans will be confirmed at launch.</p></div>
+        </header>
 
-      {/* Header */}
-      <div className="pt-28 pb-10 text-center px-4 mt-20">
-        <h1 className="text-3xl md:text-5xl font-semibold text-gray-800">
-          Predictable pricing, designed to scale
-        </h1>
-        <p className="mt-4 text-gray-600 text-base md:text-lg max-w-2xl mx-auto font-medium">
-          Start building for free, collaborate with your team, then scale to millions of users
-        </p>
-      </div>
-
-      {/* Pricing Cards */}
-      <div className="max-w-7xl mx-auto pb-16 grid grid-cols-1 md:grid-cols-3 gap-5 px-6 items-stretch">
-        
-        {/* Free */}
-        <div className="flex flex-col border border-gray-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 bg-white transform h-full">
-          <div className="flex flex-col h-full">
-            <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-800">FREE</h2>
-              <p className="text-gray-600 mt-2 text-sm">Perfect for passion projects & simple websites.</p>
-              
-              <div className="mt-6">
-                <p className="text-4xl font-bold text-gray-800">$0<span className="text-base font-medium text-gray-500">/month</span></p>
+        <section className="pricing-plans container" aria-label="Compare pricing plans">
+          {plans.map((plan) => (
+            <article key={plan.name} className={`pricing-card${plan.featured ? " pricing-card-featured" : ""}`}>
+              <div className="pricing-card-top">
+                <span className="pricing-plan-icon"><PlanIcon type={plan.icon} /></span>
+                {plan.featured && <span className="pricing-recommendation">For growing communities</span>}
               </div>
-            </div>
-            
-            {/* Ligne fine de séparation - position fixe */}
-            <div className="border-t border-gray-200 w-full my-6"></div>
-            
-            <div className="flex-grow">
-              <ul className="space-y-4 text-sm text-gray-700">
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Unlimited API requests</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 5000 monthly active users</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 500 MB database size</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 5 GB egress</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 5 GB cached egress</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 1 GB file storage</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Community support</li>
-              </ul>
-            </div>
-            
-            <div className="mt-8 pt-4">
-              <button className="w-full bg-emerald-400 hover:bg-emerald-500 border-emerald-600 border text-black font-medium py-3 rounded-md transition-colors">
-                Start for Free
-              </button>
-              <p className="mt-4 text-xs text-gray-500 text-center">
-                Free projects are paused after 14 days. Limit of 1 active project.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Pro */}
-        <div className="flex flex-col border-2 border-emerald-500 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 bg-white transform relative h-full">
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-4 py-1 rounded-full">
-            Most Popular
-          </div>
-          <div className="flex flex-col h-full">
-            <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-800">PRO</h2>
-              <p className="text-gray-600 mt-2 text-sm">For production applications with the power to scale.</p>
-              
-              <div className="mt-6">
-                <p className="text-4xl font-bold text-gray-800">$25<span className="text-base font-medium text-gray-500">/month</span></p>
-                <p className="text-xs text-gray-500 mt-1">$10 in compute credits included</p>
+              <h2>{plan.name}</h2>
+              <p className="pricing-card-description">{plan.description}</p>
+              <p className="pricing-price"><span className="pricing-currency">$</span>{plan.price}<span className="pricing-period">/ month</span></p>
+              <p className="pricing-audience">{plan.audience}</p>
+              <Link to="/register" className={`btn ${plan.featured ? "pricing-featured-button" : "btn-secondary"}`}>{plan.action}<span aria-hidden="true"><LuArrowUpRight /></span></Link>
+              <div className="pricing-features">
+                <h3>Planned inclusions</h3>
+                <ul>{plan.features.map((feature) => <li key={feature}><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 8 3 3 7-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>{feature}</li>)}</ul>
               </div>
-            </div>
-            
-            {/* Ligne fine de séparation - position fixe */}
-            <div className="border-t border-gray-200 w-full my-6"></div>
-            
-            <div className="flex-grow">
-              <ul className="space-y-4 text-sm text-gray-700">
-                <li className="flex flex-col">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2"><Check className="w-6 h-6"/></span> 
-                    <span>100,000 monthly active users</span>
-                  </div>
-                  <div className="text-xs text-gray-500 ml-8 mt-1">then $0.05 per 1GB</div>
-                </li>
-                <li className="flex flex-col">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2"><Check className="w-6 h-6"/></span> 
-                    <span>8 GB disk size per project</span>
-                  </div>
-                  <div className="text-xs text-gray-500 ml-8 mt-1">then $0.05 per 1GB</div>
-                </li>
-                <li className="flex flex-col">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2"><Check className="w-6 h-6"/></span> 
-                    <span>250 GB egress</span>
-                  </div>
-                  <div className="text-xs text-gray-500 ml-8 mt-1">then $0.05 per 1GB</div>
-                </li>
-                <li className="flex flex-col">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2"><Check className="w-6 h-6"/></span> 
-                    <span>250 GB cached egress</span>
-                  </div>
-                  <div className="text-xs text-gray-500 ml-8 mt-1">then $0.05 per 1GB</div>
-                </li>
-                <li className="flex flex-col">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2"><Check className="w-6 h-6"/></span> 
-                    <span>100 GB file storage</span>
-                  </div>
-                  <div className="text-xs text-gray-500 ml-8 mt-1">then $0.05 per 1GB</div>
-                </li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Email support</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Daily backups (7 days)</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 7-day log retention</li>
-              </ul>
-            </div>
-            
-            <div className="mt-8 pt-4">
-              <button className="w-full bg-emerald-400 hover:bg-emerald-500 border-emerald-600 border text-black font-medium py-3 rounded-md transition-colors">
-                Get Started
-              </button>
-            </div>
-          </div>
-        </div>
+            </article>
+          ))}
+        </section>
 
-        {/* Team */}
-        <div className="flex flex-col border border-gray-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 bg-white transform h-full">
-          <div className="flex flex-col h-full">
-            <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-800">TEAM</h2>
-              <p className="text-gray-600 mt-2 text-sm">Add features such as SSO, control over backups, and certifications.</p>
-              
-              <div className="mt-6">
-                <p className="text-4xl font-bold text-gray-800">$599<span className="text-base font-medium text-gray-500">/month</span></p>
-                <p className="text-xs text-gray-500 mt-1">$10 in compute credits included</p>
-              </div>
-            </div>
-            
-            {/* Ligne fine de séparation - position fixe */}
-            <div className="border-t border-gray-200 w-full my-6"></div>
-            
-            <div className="flex-grow">
-              <ul className="space-y-4 text-sm text-gray-700">
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Everything in Pro, plus:</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> SOC2</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Project-scoped & read-only access</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> HIPAA (add-on)</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> SSO for dashboard</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Priority email support & SLAs</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> Daily backups (14 days)</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2"><Check/></span> 28-day log retention</li>
-              </ul>
-            </div>
-            
-            <div className="mt-8 pt-4">
-              <button className="w-full bg-emerald-400 hover:bg-emerald-500 border-emerald-600 border text-black font-medium py-3 rounded-md transition-colors">
-                Get Started
-              </button>
-            </div>
+        <div className="pricing-bottom-note container"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg><p>Explore at your own pace. No payment is collected in this preview.</p></div>
+
+        <section className="pricing-faq-section">
+          <div className="container pricing-faq-layout">
+            <div className="pricing-faq-heading"><p className="eyebrow">A few helpful answers</p><h2>Good questions.<br />Clear answers.</h2><p>A little more about the plans and what to expect as Grupedia takes shape.</p><Link to="/devs">Explore the developer preview <span aria-hidden="true"><LuArrowUpRight /></span></Link></div>
+            <div className="pricing-faq-list">{questions.map(({ question, answer }) => <details key={question}><summary>{question}<span aria-hidden="true" className="pricing-faq-plus">+</span></summary><p>{answer}</p></details>)}</div>
           </div>
-        </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-6">
-        <ComputeCalculator />
-      </div>
+        </section>
+        <section className="container pricing-closing"><span aria-hidden="true" className="pricing-closing-mark"><LuSparkles /></span><h2>Every great learning community<br />starts with a first step.</h2><Link className="btn btn-primary" to="/register">Take a look around <span aria-hidden="true"><LuArrowUpRight /></span></Link></section>
+      </main>
       <Footer />
     </div>
   );
-};
-
-export default Pricing;
+}
