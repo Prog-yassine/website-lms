@@ -10,11 +10,17 @@ Grupedia donne une base technique à personnaliser autour de son application. Pa
 
 [Voir l’aperçu mobile](docs/previews/home-mobile.png)
 
+[Tarifs et simulateur : ordinateur](docs/previews/pricing-1440.png) · [mobile](docs/previews/pricing-390.png)
+
 ## Périmètre
 
 Cette version porte uniquement sur les interfaces : accueil, tarifs, présentation développeurs, connexion et inscription. Toutes les anciennes pages internes (organisations, projets, bases de données, stockage, paramètres et administration) sont supprimées. Les adresses `/dashboard/*` redirigent vers `/coming-soon`, sans charger de données ni vérifier une session auprès du serveur. Cette page d’attente ne contient aucune donnée privée et reste accessible pour prévisualiser le résultat. Les fonctionnalités métier seront développées séparément.
 
 Les illustrations de produit, tarifs et intégrations sont des présentations du concept, pas des services disponibles ni des offres souscriptibles.
+
+## Architecture et tarifs proposés
+
+La [recherche AWS et le modèle économique](docs/aws-architecture-and-pricing.fr.md) détaillent les services recommandés, les coûts officiels vérifiés à Stockholm et les hypothèses. La page `/pricing` présente Free, Pro à 25 $/mois et Team à 99 $/mois, leurs quotas par espace et les dépassements à l’usage. Les prix partagés et l’estimateur proviennent de `src/lib/pricing.js`. Le calcul reste local au navigateur : aucun abonnement ni ressource AWS n’est créé.
 
 ## Démarrage
 
