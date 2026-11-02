@@ -1,0 +1,4 @@
+scenario,initial_usd,monthly_infra_usd,monthly_usage_reserve_usd,monthly_tools_reserve_usd,development_assumption_usd,months,subtotal_usd,contingency_rate,cash_with_contingency_usd
+Pilote DIY,200,117.45,50,30,0,6,1384.70,.20,1661.64
+Beta DIY,500,286.82,100,50,0,6,3120.92,.20,3745.10
+Beta300h50USD,500,286.82,100,50,15000,6,18120.92,.20,21745.10

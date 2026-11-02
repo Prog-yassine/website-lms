@@ -22,6 +22,10 @@ Les illustrations de produit, tarifs et intégrations sont des présentations du
 
 La [recherche AWS et le modèle économique](docs/aws-architecture-and-pricing.fr.md) détaillent les services recommandés, les coûts officiels vérifiés à Stockholm et les hypothèses. La page `/pricing` présente Free, Pro à 25 $/mois et Team à 99 $/mois, leurs quotas par espace et les dépassements à l’usage. Les prix partagés et l’estimateur proviennent de `src/lib/pricing.js`. Le calcul reste local au navigateur : aucun abonnement ni ressource AWS n’est créé.
 
+La [recherche AWS approfondie](docs/architecture-aws-complete.fr.md) complète cette synthèse avec l’inventaire des services, le schéma d’architecture, les décisions d’isolation et de marque blanche, quatre dossiers techniques et un CSV de budgets reproductibles. Elle sépare les besoins du MVP des options de croissance ; aucune infrastructure n’est provisionnée.
+
+Le [budget de démarrage](docs/budget-demarrage-grupedia.fr.md) calcule la trésorerie sur six mois, avec développement personnel ou sous-traité. La [grille coûts AWS / prix de vente](docs/prix-grupedia-bases-sur-aws.fr.md) distingue coûts fournisseur, tarifs Grupedia et options non encore intégrées au simulateur.
+
 ## Démarrage
 
 Node.js 20 ou version ultérieure et npm sont nécessaires.

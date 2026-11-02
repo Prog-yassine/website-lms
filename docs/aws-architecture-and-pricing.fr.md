@@ -2,6 +2,8 @@
 
 **Vérification : 1 novembre 2026.** Région de référence : **Europe (Stockholm), `eu-north-1`**. Montants en USD hors taxes, sans remises ni crédits ; calculs mensuels sur **730 heures**. Les tarifs AWS et les prix de vente Grupedia sont distincts. Le site présente une proposition et un estimateur : **aucun paiement, déploiement AWS ou prélèvement n’est déclenché**.
 
+Pour l’analyse complète des services, quotas, options d’hébergement et budgets : [recherche AWS approfondie](architecture-aws-complete.fr.md).
+
 ## Architecture proposée
 
 Grupedia permettrait aux développeurs de publier des templates et des plugins réutilisables. Un utilisateur choisirait un template, connecterait ses tables aux listes, boutons et formulaires, puis ajouterait authentification, fichiers et plugins. **Ces fonctions demandent du code produit** : AWS ne fournit pas automatiquement l’éditeur, les liaisons de données, la marketplace, les permissions ou la facturation.
