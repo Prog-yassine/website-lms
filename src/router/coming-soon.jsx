@@ -2,19 +2,23 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LuArrowRight, LuDatabase, LuLayers, LuSparkles, LuLogOut } from 'react-icons/lu';
 import Brand from '../components/Brand';
+import { useAuth } from '../auth/AuthContext';
 import './placeholder.css';
 
 export default function ComingSoon() {
   const navigate = useNavigate();
-  const [hasSession] = useState(() => Boolean(localStorage.getItem('token')));
-  function signOut() {
-    localStorage.removeItem('token');
+  const { status, logout } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+  async function signOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    await logout();
     navigate('/login', { replace:true });
   }
   return <div className="placeholder-page">
     <header className="container placeholder-header">
       <Brand />
-      {hasSession ? <button className="placeholder-signout" onClick={signOut}><LuLogOut aria-hidden="true" /> Sign out</button> : <Link className="placeholder-signout" to="/">Back to home <LuArrowRight aria-hidden="true" /></Link>}
+      {status === 'authenticated' ? <button className="placeholder-signout" onClick={signOut} disabled={signingOut}><LuLogOut aria-hidden="true" /> {signingOut ? 'Signing out…' : 'Sign out'}</button> : <Link className="placeholder-signout" to="/">Back to home <LuArrowRight aria-hidden="true" /></Link>}
     </header>
     <main id="main-content" className="placeholder-main">
       <div className="placeholder-art" aria-hidden="true">

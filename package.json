@@ -17,7 +17,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:site": "npm run build && npm run build --prefix server",
+    "dev:fullstack": "node server/dev.mjs",
+    "test:api": "node --test server/worker.test.mjs"
   },
   "eslintConfig": {
     "extends": [
