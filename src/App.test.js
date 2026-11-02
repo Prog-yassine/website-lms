@@ -51,8 +51,8 @@ async function waitForAuth(status = 'anonymous') {
   await waitFor(() => expect(screen.getByTestId('app-auth-state')).toHaveTextContent(status));
 }
 
-function installDashboardFetch() {
-  installFetch(true, (url) => {
+function installDashboardFetch(handleOther = (url) => { throw new Error(`Unexpected backend request: ${url}`); }) {
+  installFetch(true, (url, options) => {
     const path = pathOf(url);
     if (path === '/api/auth/login') return Promise.resolve(response(SESSION));
     if (path === '/api/projects') return Promise.resolve(response({
@@ -68,7 +68,7 @@ function installDashboardFetch() {
       ],
       rows: [{ id: 1, name: 'Integration product' }], rowCount: 1, page: 1, pageSize: 25, totalPages: 1,
     }));
-    throw new Error(`Unexpected backend request: ${url}`);
+    return handleOther(url, options);
   });
 }
 
@@ -163,6 +163,30 @@ test('signing out of the placeholder posts logout and returns to login with a cl
   expect(options).toEqual(expect.objectContaining({ method: 'POST', credentials: 'include' }));
   expect(authorization(options)).toBe('Bearer integration-access-token');
   expect(callsTo('/api/projects')).toHaveLength(0);
+});
+
+test('dashboard logout keeps its pending UI until the server response completes without aborting the request', async () => {
+  let resolveLogout;
+  let logoutSignal;
+  installDashboardFetch((url, options) => {
+    if (pathOf(url) !== '/api/auth/logout') throw new Error(`Unexpected backend request: ${url}`);
+    logoutSignal = options.signal;
+    return new Promise((resolve) => { resolveLogout = resolve; });
+  });
+  visit('/dashboard');
+  expect(await screen.findByRole('cell', { name: 'Integration product' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /^sign out$/i }));
+
+  expect(screen.getByRole('button', { name: /signing out/i })).toBeDisabled();
+  expect(screen.getByTestId('app-auth-state')).toHaveTextContent('authenticated');
+  expect(screen.queryByRole('heading', { name: /welcome back/i })).not.toBeInTheDocument();
+  expect(callsTo('/api/auth/logout')).toHaveLength(1);
+  expect(logoutSignal.aborted).toBe(false);
+
+  await act(async () => { resolveLogout(response(null, 204)); });
+  expect(await screen.findByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
+  await waitForAuth();
+  expect(logoutSignal.aborted).toBe(false);
 });
 
 test('an offline logout survives a reload and requires an explicit login before reopening the dashboard', async () => {

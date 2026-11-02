@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const mounted = useRef(false);
   const controllers = useRef(new Set());
   const actionVersion = useRef(0);
+  const logoutInProgress = useRef(false);
 
   const trackRequest = useCallback((externalSignal) => {
     const controller = new AbortController();
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
     controllers.current.add(controller);
     return {
       signal: controller.signal,
+      abort: () => controller.abort(),
       release: () => {
         controllers.current.delete(controller);
         externalSignal?.removeEventListener("abort", onAbort);
@@ -33,7 +35,7 @@ export function AuthProvider({ children }) {
       }
       return data.user;
     } catch (error) {
-      if (error.name !== "AbortError" && mounted.current) {
+      if (error.name !== "AbortError" && mounted.current && !logoutInProgress.current) {
         setSession({ user: null, status: "anonymous" });
       }
       throw error;
@@ -49,6 +51,7 @@ export function AuthProvider({ children }) {
     try { localStorage.removeItem("token"); } catch { /* Storage can be disabled without preventing cookie auth. */ }
     const onSession = (event) => {
       const user = event.detail?.user || null;
+      if (!user && logoutInProgress.current) return;
       setSession({ user, status: user ? "authenticated" : "anonymous" });
     };
     window.addEventListener(AUTH_SESSION_EVENT, onSession);
@@ -105,17 +108,23 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     actionVersion.current += 1;
+    logoutInProgress.current = true;
     const request = trackRequest();
-    // Start with the current Bearer token, then clear local auth even if the network fails.
-    const pending = apiRequest("/api/auth/logout", { method: "POST", retryAuth: false, signal: request.signal });
     setSignedOutPreference(true);
-    clearSession();
-    if (mounted.current) setSession({ user: null, status: "anonymous" });
+    // Capture the Bearer token before removing it from memory. Keep the visible
+    // session until revocation settles so a route change cannot cancel logout.
+    const pending = apiRequest("/api/auth/logout", { method: "POST", retryAuth: false, signal: request.signal });
+    setAccessToken(null);
+    const timeout = window.setTimeout(request.abort, 10000);
     try {
       await pending;
     } catch {
-      // The local session is already cleared; the server revokes the refresh cookie when reachable.
+      // The tab preference prevents restoring an unrevoked cookie after an offline logout.
     } finally {
+      window.clearTimeout(timeout);
+      logoutInProgress.current = false;
+      clearSession();
+      if (mounted.current) setSession({ user: null, status: "anonymous" });
       request.release();
     }
   }, [trackRequest]);
