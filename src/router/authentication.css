@@ -1,0 +1,157 @@
+.authmgr-editor { background: var(--db-bg); }
+.authmgr-sidebar-label { padding: 0 20px; margin: 3px 0 12px; color: #767f8a; font-size: 9px; font-weight: 550; letter-spacing: .11em; }
+.authmgr-sidebar-tabs { padding: 0 9px; display: flex; flex-direction: column; gap: 4px; }
+.authmgr-sidebar-tabs > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 38px; padding: 9px 11px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #a2acb6; text-align: left; font-size: 11px; }
+.authmgr-sidebar-tabs > button > svg { flex: 0 0 15px; height: 15px; color: #858f9a; }
+.authmgr-sidebar-tabs > button > small { margin-left: auto; color: #74818b; font-size: 9px; }
+.authmgr-sidebar-tabs > button:hover { background: #292c2f; }
+.authmgr-sidebar-tabs > button.is-active { border-color: #32483d; background: #263a2e; color: #8ee4b5; }
+.authmgr-sidebar-tabs > button.is-active > svg, .authmgr-sidebar-tabs > button.is-active > small { color: #80c99e; }
+.authmgr-sidebar-note { margin-top: auto; padding: 20px 17px; border-top: 1px solid var(--db-line); display: flex; align-items: flex-start; gap: 9px; color: #84958b; }
+.authmgr-sidebar-note > svg { width: 15px; height: 15px; flex: 0 0 15px; margin-top: 1px; }
+.authmgr-sidebar-note strong { color: #acb9b0; font-size: 10px; font-weight: 500; }
+.authmgr-sidebar-note p { color: #75847b; font-size: 9px; margin: 4px 0 0; line-height: 1.7; }
+.authmgr-scope-badge { display: flex; align-items: center; gap: 6px; color: #92a99c; font-size: 9px; white-space: nowrap; }
+.authmgr-scope-badge svg { width: 12px; height: 12px; }
+.authmgr-namespace-badge { padding: 4px 8px; border: 1px solid #3b6650; border-radius: 5px; background: #263e30; color: #9ce6b9; font-size: 11px; font-weight: 500; line-height: 1.5; }
+.authmgr-heading-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; flex-shrink: 0; gap: 8px; }
+.authmgr-table-link { color: #a1d2b2; border-color: #405b49; background: #27362c; }
+.authmgr-table-link:hover { background: #314638; }
+.authmgr-table-link > svg:last-child { width: 11px; height: 11px; color: #83ad92; }
+.authmgr-namespace-note { color: #83978b; font-size: 10px; line-height: 1.9; margin: -4px 0 17px; max-width: 780px; }
+.authmgr-namespace-note code { color: #a9cdb6; font-size: 10px; }
+.authmgr-panel { flex: 1; min-height: 0; min-width: 0; overflow: auto; padding: 30px; scrollbar-width: thin; scrollbar-color: #434b50 #1d2023; }
+.authmgr-panel > .db-editor-message { min-height: 100%; }
+.authmgr-content-heading { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 23px; }
+.authmgr-content-heading h2 { color: #e0e4e8; font-size: 20px; font-weight: 550; letter-spacing: -.025em; margin: 0 0 7px; }
+.authmgr-content-heading p { color: #8b97a3; font-size: 11px; line-height: 1.8; margin: 0; }
+.authmgr-content-heading > button { font-size: 10px; }
+.authmgr-scope-note { display: flex; align-items: flex-start; gap: 9px; padding: 12px 14px; margin-bottom: 26px; border: 1px solid #36423c; border-radius: 7px; background: #212b25; color: #99afa0; }
+.authmgr-scope-note > svg { width: 15px; height: 15px; flex: 0 0 15px; margin-top: 2px; color: #83b895; }
+.authmgr-scope-note p { margin: 0; color: #96aa9c; font-size: 10px; line-height: 1.8; max-width: 750px; }
+.authmgr-scope-note strong { color: #bdcfc2; font-weight: 550; }
+.authmgr-user-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 16px; }
+.authmgr-user-toolbar > .db-row-search { width: 330px; max-width: calc(100% - 60px); background: #202326; }
+.authmgr-user-toolbar input { height: 35px; }
+.authmgr-user-toolbar > span { color: #7d8994; font-size: 10px; white-space: nowrap; }
+.authmgr-table-scroll { position: relative; overflow-x: auto; border: 1px solid #343a40; border-radius: 7px; width: 100%; scrollbar-width: thin; }
+.authmgr-table { width: 100%; min-width: 780px; border-spacing: 0; text-align: left; color: #a9b4be; font-size: 10px; }
+.authmgr-table thead th { padding: 13px 16px; border-bottom: 1px solid #343b41; background: #23272a; color: #aeb9c2; font-size: 9px; font-weight: 500; white-space: nowrap; }
+.authmgr-table tbody td { padding: 16px; border-bottom: 1px solid #2e353b; background: #1c2023; vertical-align: middle; white-space: nowrap; }
+.authmgr-table tbody tr:last-child td { border-bottom: 0; }
+.authmgr-table tbody tr:hover td { background: #22272b; }
+.authmgr-user-cell { display: flex; align-items: center; gap: 10px; min-width: 190px; }
+.authmgr-avatar { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border: 1px solid #40544a; border-radius: 50%; background: #2b3e33; color: #b4d9c0; font-size: 11px; font-weight: 500; }
+.authmgr-user-cell > div { display: flex; flex-direction: column; gap: 5px; }
+.authmgr-user-cell strong { color: #d0d8de; font-size: 11px; font-weight: 500; }
+.authmgr-user-cell div > span { color: #87949f; font-size: 10px; }
+.authmgr-role { display: inline-block; padding: 3px 7px; border: 1px solid #3b4942; border-radius: 4px; background: #27342d; color: #a2c1ad; font-size: 9px; }
+.authmgr-provider-inline { display: inline-flex; align-items: center; gap: 5px; color: #a0adb8; font-size: 10px; }
+.authmgr-provider-inline svg { width: 12px; height: 12px; }
+.authmgr-detail-button { display: grid; place-items: center; width: 29px; height: 29px; padding: 0; border: 1px solid #3b434a; border-radius: 5px; color: #9cacb9; background: #262c31; }
+.authmgr-detail-button:hover { background: #343e45; }
+.authmgr-detail-button svg { width: 15px; height: 15px; }
+.authmgr-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 245px; padding: 30px 18px; border: 1px dashed #353e45; border-radius: 8px; text-align: center; background: #1b2023; }
+.authmgr-empty > svg { width: 25px; height: 25px; margin-bottom: 16px; color: #7b9b89; }
+.authmgr-empty h3 { color: #bfccd4; margin: 0 0 8px; font-size: 13px; font-weight: 500; }
+.authmgr-empty p { color: #7f909d; max-width: 310px; margin: 0; font-size: 10px; line-height: 1.8; }
+.authmgr-provider-list { display: grid; gap: 11px; }
+.authmgr-provider-card { display: flex; align-items: center; gap: 13px; padding: 18px; border: 1px solid #343d43; border-radius: 8px; background: #1e2427; }
+.authmgr-provider-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border: 1px solid #3b454a; border-radius: 9px; color: #b9c3ca; background: #2a3034; font-size: 18px; }
+.authmgr-provider-icon.provider-email { color: #9cc5ad; background: #293b31; border-color: #3e5647; }
+.authmgr-provider-card > div { min-width: 0; }
+.authmgr-provider-card h3 { color: #d3dce2; font-weight: 550; font-size: 12px; margin: 0 0 5px; }
+.authmgr-provider-card p { color: #8a9aa6; font-size: 10px; line-height: 1.8; margin: 0; }
+.authmgr-provider-card > .db-button, .authmgr-provider-enabled { margin-left: auto; flex-shrink: 0; }
+.authmgr-provider-card > .db-button { font-size: 9px; min-height: 29px; }
+.authmgr-provider-enabled { display: inline-flex; align-items: center; gap: 6px; color: #9bd6b1; font-size: 10px; white-space: nowrap; }
+.authmgr-provider-enabled > span { width: 5px; height: 5px; border-radius: 50%; background: #78d29a; }
+.authmgr-settings { margin-top: 27px; padding: 21px; border: 1px solid #343d43; border-radius: 8px; background: #1e2326; }
+.authmgr-settings h3 { font-size: 12px; color: #c8d5de; font-weight: 500; margin: 0 0 7px; }
+.authmgr-settings > p { color: #80929e; font-size: 10px; margin: 0 0 21px; }
+.authmgr-settings dl { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.authmgr-settings dl > div { padding-right: 12px; border-right: 1px solid #343d43; }
+.authmgr-settings dl > div:last-child { border-right: 0; }
+.authmgr-settings dt { display: flex; align-items: center; gap: 6px; color: #8498a5; font-size: 9px; line-height: 1.8; }
+.authmgr-settings dt svg { width: 12px; height: 12px; flex: 0 0 12px; }
+.authmgr-settings dd { color: #c5d6df; font-size: 13px; margin: 10px 0 0; }
+.authmgr-session-cell { display: flex; align-items: center; gap: 10px; }
+.authmgr-session-cell > svg { width: 17px; height: 17px; flex: 0 0 17px; color: #8fa99c; }
+.authmgr-session-cell > div { display: flex; flex-direction: column; gap: 5px; }
+.authmgr-session-cell strong { color: #c2d0da; font-size: 10px; font-weight: 500; }
+.authmgr-session-cell code { display: block; max-width: 155px; overflow: hidden; text-overflow: ellipsis; font-size: 9px; color: #6f8594; }
+.authmgr-revoke-button { color: #c9a9a0; border-color: #4b3f3a; background: #302825; }
+.authmgr-revoke-button:not(:disabled):hover { background: #44332b; }
+.authmgr-success { display: flex; align-items: flex-start; gap: 7px; margin: -6px 0 20px; color: #9ac5a8; font-size: 10px; line-height: 1.8; }
+.authmgr-success > svg { width: 14px; height: 14px; flex: 0 0 14px; margin-top: 2px; }
+.authmgr-dialog { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 40px); overflow: auto; margin: auto; padding: 25px; border: 1px solid #424d55; border-radius: 12px; color: #d3dfe7; background: #20282d; box-shadow: 0 25px 100px #0009; color-scheme: dark; }
+.authmgr-dialog::backdrop { background: #0009; backdrop-filter: blur(3px); }
+.authmgr-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 19px; }
+.authmgr-dialog-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #415c4d; border-radius: 9px; background: #2b4033; color: #99c7aa; font-size: 19px; }
+.authmgr-dialog h2 { font-size: 19px; font-weight: 500; letter-spacing: -.025em; margin: 0 0 11px; }
+.authmgr-dialog-description { color: #90a4b3; font-size: 11px; line-height: 1.9; margin: 0 0 22px; }
+.authmgr-user-details { margin: 0; }
+.authmgr-user-details > div { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 16px; padding: 13px 0; border-bottom: 1px solid #35434c; font-size: 11px; line-height: 1.8; }
+.authmgr-user-details > div:last-child { border-bottom: 0; }
+.authmgr-user-details dt { color: #859cab; }
+.authmgr-user-details dd { color: #c3d6e3; margin: 0; overflow-wrap: anywhere; }
+.authmgr-user-details code { font-size: 10px; }
+.authmgr-session-to-revoke { display: flex; align-items: center; gap: 11px; padding: 14px; margin-bottom: 20px; border: 1px solid #3a4852; border-radius: 7px; background: #1c252b; }
+.authmgr-session-to-revoke > svg { width: 19px; height: 19px; color: #9aaebb; flex: 0 0 19px; }
+.authmgr-session-to-revoke strong { display: block; color: #c4d3dd; font-size: 11px; font-weight: 500; margin-bottom: 5px; }
+.authmgr-session-to-revoke code { color: #809bab; font-size: 9px; overflow-wrap: anywhere; }
+.authmgr-dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 25px; }
+.authmgr-revoke-confirm { border-color: #956b5a; background: #794e3d; color: #ffe8dc; }
+.authmgr-revoke-confirm:not(:disabled):hover { background: #925c46; }
+.authmgr-error { color: #e8b19c; padding: 10px 12px; border: 1px solid #735343; border-radius: 6px; background: #3c2d26; font-size: 10px; line-height: 1.8; margin: 0 0 16px; }
+@media (max-width: 1100px) { .authmgr-panel { padding: 24px; } .authmgr-settings dl { gap: 12px; } .authmgr-settings dt { align-items: flex-start; } .authmgr-settings dt > svg { margin-top: 2px; } }
+@media (max-width: 1000px) { .authmgr-content-heading { flex-wrap: wrap; } .authmgr-heading-actions { justify-content: flex-start; } }
+@media (max-width: 780px) { .authmgr-panel { padding: 23px 18px; } .authmgr-sidebar-tabs > button { min-height: 44px; } .authmgr-content-heading h2 { font-size: 20px; } .authmgr-content-heading p { font-size: 11px; } .authmgr-user-toolbar input { height: 39px; font-size: 16px; } .authmgr-sidebar-label { margin-top: 3px; } .authmgr-provider-card { padding: 16px 13px; gap: 10px; } .authmgr-provider-card p { font-size: 10px; } .authmgr-settings { padding: 18px; } }
+@media (max-width: 480px) { .authmgr-panel { padding: 21px 15px; } .authmgr-content-heading { align-items: flex-start; } .authmgr-content-heading p { max-width: 185px; font-size: 10px; } .authmgr-content-heading > button { padding: 6px 8px; } .authmgr-scope-note { padding: 11px; gap: 8px; } .authmgr-scope-note p { font-size: 10px; } .authmgr-provider-card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; } .authmgr-provider-card > .db-button, .authmgr-provider-enabled { grid-column: 2; margin-left: 0; justify-self: start; } .authmgr-provider-icon { width: 32px; height: 32px; flex-basis: 32px; } .authmgr-settings dl { grid-template-columns: 1fr; gap: 14px; } .authmgr-settings dl > div { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 0 0 14px; border-right: 0; border-bottom: 1px solid #343d43; } .authmgr-settings dl > div:last-child { border-bottom: 0; padding-bottom: 0; } .authmgr-settings dd { margin-top: 0; font-size: 12px; white-space: nowrap; } .authmgr-settings dt { font-size: 10px; } .authmgr-dialog { padding: 21px; } .authmgr-user-details > div { grid-template-columns: 72px minmax(0, 1fr); gap: 12px; } }
+
+/* Application-user registration, browser integration, and project policies. */
+.authmgr-heading-actions { max-width: 100%; }
+.authmgr-list-limit { color: #9aab9e; font-size: 10px; line-height: 1.8; margin: 0 0 13px; }
+.authmgr-user-id { display: block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px !important; }
+.authmgr-session-id { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; font-size: 9px; color: #8099a8; }
+.authmgr-form { display: flex; flex-direction: column; gap: 19px; }
+.authmgr-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.authmgr-field > label { color: #bdcfd9; font-size: 11px; font-weight: 500; }
+.authmgr-field input, .authmgr-field textarea { display: block; width: 100%; min-width: 0; min-height: 39px; padding: 10px 11px; border: 1px solid #3a4b54; border-radius: 6px; background: #192329; color: #cbdce6; font: inherit; font-size: 11px; line-height: 1.8; }
+.authmgr-field input::placeholder, .authmgr-field textarea::placeholder { color: #6f8795; }
+.authmgr-field textarea { resize: vertical; min-height: 101px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-field input[readonly] { color: #9abca7; background: #1c2923; border-color: #3d5144; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-field input:focus, .authmgr-field textarea:focus { outline: 0; border-color: #75b28f; box-shadow: 0 0 0 2px #64af821c; }
+.authmgr-field > small { color: #8299a8; font-size: 10px; line-height: 1.8; }
+.authmgr-password-field { position: relative; }
+.authmgr-password-field input { padding-right: 42px; }
+.authmgr-password-field button { position: absolute; right: 5px; top: 5px; height: 30px; width: 30px; }
+.authmgr-form > .authmgr-dialog-actions { margin-top: 4px; }
+.authmgr-checkbox { display: flex; align-items: flex-start; gap: 9px; color: #bbd1dd; }
+.authmgr-checkbox > input { flex: 0 0 15px; width: 15px; height: 15px; margin: 2px 0 0; accent-color: #75b68e; }
+.authmgr-checkbox > span { display: flex; flex-direction: column; gap: 6px; }
+.authmgr-checkbox strong { font-size: 11px; font-weight: 500; }
+.authmgr-checkbox small { color: #8299a8; font-size: 10px; line-height: 1.8; }
+.authmgr-settings-actions { display: flex; justify-content: flex-end; }
+.authmgr-policy-settings { margin-top: 26px; padding-top: 24px; border-top: 1px solid #34424a; }
+.authmgr-policy-settings > p { color: #80929e; font-size: 10px; margin: 0 0 21px; }
+.authmgr-integration { min-width: 0; }
+.authmgr-integration-intro { margin-bottom: 23px; }
+.authmgr-integration h3 { color: #c6d7e2; font-size: 13px; font-weight: 500; margin: 0 0 10px; }
+.authmgr-integration p { color: #8da3b2; font-size: 11px; line-height: 1.9; margin: 0; max-width: 750px; }
+.authmgr-integration-identifiers { display: grid; grid-template-columns: minmax(140px, .8fr) minmax(0, 1.6fr); gap: 19px; padding: 20px; margin-bottom: 28px; border: 1px solid #35464f; border-radius: 8px; background: #1d282d; }
+.authmgr-integration-step { display: flex; align-items: flex-start; gap: 13px; margin: 22px 0; }
+.authmgr-integration-step > span { display: grid; place-items: center; flex: 0 0 24px; height: 24px; border: 1px solid #3e5a49; border-radius: 50%; background: #273c2f; color: #a3cdb1; font-size: 10px; }
+.authmgr-integration-step > div { min-width: 0; }
+.authmgr-integration-step h3 { margin-top: 4px; font-size: 12px; }
+.authmgr-integration-step p { font-size: 10px; }
+.authmgr-integration-step p > code { color: #a4c7b1; font-size: 10px; }
+.authmgr-integration-step .db-button { margin-top: 13px; }
+.authmgr-code-example { position: relative; width: 100%; min-width: 0; border: 1px solid #354851; border-radius: 8px; overflow: hidden; background: #152027; }
+.authmgr-code-example > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #34454e; background: #202c32; }
+.authmgr-code-example > div > span { color: #8dabb8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-code-example pre { overflow-x: auto; max-height: 500px; max-width: 100%; padding: 20px; margin: 0; color: #a6cbb7; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; line-height: 1.9; scrollbar-width: thin; }
+.authmgr-code-example > p { padding: 10px 15px; border-top: 1px solid #34454e; color: #a6cbb7; font-size: 10px; }
+@media (max-width: 1000px) { .authmgr-integration-identifiers { grid-template-columns: 1fr; } }
+@media (max-width: 780px) { .authmgr-field input:not([readonly]), .authmgr-field textarea { font-size: 16px; } .authmgr-field input[readonly] { font-size: 12px; } .authmgr-code-example pre { font-size: 11px; } .authmgr-checkbox > input { width: 17px; height: 17px; flex-basis: 17px; } }
+@media (max-width: 480px) { .authmgr-integration-identifiers { padding: 16px; gap: 18px; } .authmgr-code-example > div { padding-inline: 11px; } .authmgr-code-example pre { padding: 15px; } .authmgr-integration-step { gap: 10px; } .authmgr-integration-step .db-button { max-width: 100%; white-space: normal; text-align: left; } .authmgr-policy-settings dt { font-size: 9px !important; } }

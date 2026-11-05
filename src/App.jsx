@@ -1,46 +1,70 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './router/home';
-
-
-import Organization from './router/organization';
-import NewOrganization from './router/new_organization';
-import NewDivision from './router/new_division';
-import DashboardDivision from './router/dashboard_division';
 import Login from './router/login';
-import Pricing from './router/pricing';
-import ProtectedRoute from "./protected"; // <-- import
-import Division from './router/division';
-import Developer from './router/developer';
 import Register from './router/register';
+import Pricing from './router/pricing';
+import Developer from './router/developer';
+import ComingSoon from './router/coming-soon';
+import NotFound from './router/not-found';
+import Dashboard from './router/dashboard';
+import Authentication from './router/authentication';
+import Storage from './router/storage';
+import ApiBuilder from './router/api-builder';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 
+const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon', '/dashboard': 'Table editor', '/dashboard/database': 'Table editor', '/dashboard/auth': 'Authentication', '/dashboard/storage': 'Storage', '/dashboard/api-builder': 'API Builder' };
 
-function App() {
-
-
-  return (
-    <Router>
-      <div className="selection:bg-emerald-400">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/devs" element={< Developer/>} />
-
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard/org" element={<Organization />} />
-            <Route path="/dashboard/org/:id" element={<Division />} />
-            <Route path="/dashboard/org/new" element={<NewOrganization />} />
-            <Route path="/dashboard/org/:id/division/new" element={<NewDivision />} />
-            <Route path="/dashboard/division/:id/*" element={<DashboardDivision />} />
-          </Route>
-        </Routes>
-      </div>
-    </Router>
-  );
+function RouteEffects() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    const title = titles[pathname] || (pathname.startsWith('/dashboard/') ? 'Workspace' : 'Page not found');
+    document.title = `${title} · Grupedia`;
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
 }
 
-export default App;
+function ProtectedRoute({ children }) {
+  const { status } = useAuth();
+  if (status === 'loading') {
+    return <main id="main-content" className="placeholder-main">
+      <p className="eyebrow">Opening your workspace</p>
+      <h1>One moment<span>.</span></h1>
+      <p role="status" aria-live="polite">Checking your session…</p>
+    </main>;
+  }
+  if (status !== 'authenticated') return <Navigate to="/login" replace />;
+  return children;
+}
+
+export function AppRoutes() {
+  return <>
+    <RouteEffects />
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/devs" element={<Developer />} />
+      <Route path="/docs" element={<Developer />} />
+      <Route path="/coming-soon" element={<ComingSoon />} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+        <Route index element={<Dashboard />} />
+        <Route path="database" element={<Dashboard />} />
+        <Route path="auth" element={<Authentication />} />
+        <Route path="storage" element={<Storage />} />
+        <Route path="api-builder" element={<ApiBuilder />} />
+      </Route>
+      <Route path="/dashboard/*" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </>;
+}
+
+export default function App() {
+  return <BrowserRouter><AuthProvider><AppRoutes /></AuthProvider></BrowserRouter>;
+}

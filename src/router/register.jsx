@@ -1,131 +1,56 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { LuArrowRight, LuEye, LuEyeOff, LuCheck } from "react-icons/lu";
+import AuthLayout from "../components/auth/AuthLayout";
+import { useAuth } from "../auth/AuthContext";
 
-const Register = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loginType, setLoginType] = useState("root"); // "root" ou "iam"
-    const navigate = useNavigate();
+export default function Register() {
+  const { register, status } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const request = useRef(null);
+  const navigate = useNavigate();
+  const busy = isLoading || status === "loading";
+  useEffect(() => () => request.current?.abort(), []);
+  useEffect(() => {
+    if (status === "authenticated") navigate("/dashboard", { replace: true });
+  }, [status, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
-    // Prepare body depending on type
-    const body = {
-        name: name,
-        email: email,
-        password: password,
-    }
-
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (request.current || status === "loading") return;
+    setError("");
+    setIsLoading(true);
+    const controller = new AbortController();
+    request.current = controller;
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Register failed");
-        return;
-      }
-      navigate("/login");
+      if (!name.trim()) throw new Error("Please enter your full name.");
+      await register({ name: name.trim(), email: email.trim(), password }, { signal: controller.signal });
+      if (!controller.signal.aborted) navigate("/login", { state: { registered: true, email: email.trim() } });
     } catch (err) {
-      console.error(err);
-      alert("Server error");
+      if (err.name !== "AbortError") setError(err.message || "We couldn't create your account. Please try again.");
+    } finally {
+      request.current = null;
+      if (!controller.signal.aborted) setIsLoading(false);
     }
   };
 
-
-
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left side */}
-      <div className="flex flex-col gap-6 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-semibold text-lg cursor-pointer"
-          >
-            <div className="text-white flex items-center justify-center rounded-md">
-              <img src="./logo.svg" className="w-10 h-10" />
-            </div>
-            Grupedia
-          </a>
-        </div>
-
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">
-            <h2 className="text-4xl font-bold">Welcome back</h2>
-            <h2 className="text-sm font-bold text-gray-400">
-              Sign in to your account
-            </h2>
-
-
-            <form onSubmit={handleSubmit} className="space-y-4 my-8">
-                <div>
-                    <label className="block text-lg font-medium mb-1">
-                        Username
-                    </label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:ring focus:ring-emerald-200 outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="block text-lg font-medium mb-1">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:ring focus:ring-emerald-200 outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-lg font-medium mb-1">
-                        password
-                    </label>
-                    <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:ring focus:ring-emerald-200 outline-none"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="w-full rounded-md bg-emerald-500 text-white py-2 font-medium hover:bg-emerald-700 transition cursor-pointer"
-                >
-                    Sign Up
-                </button>
-            </form>
-
-            <p className="mt-4 text-center text-sm text-gray-500">
-                Have an account?{" "}
-                <a onClick={() => navigate("/login")} className="text-emerald-600 hover:underline cursor-pointer">
-                    Sign In
-                </a>
-            </p>
-            </div>
-        </div>
-        </div>
-
-      {/* Right side image */}
-      <div className="bg-gray-100 relative hidden lg:block"></div>
-    </div>
+    <AuthLayout mode="register">
+      <div className="auth-intro"><span className="eyebrow">MAKE ROOM FOR WHAT’S NEXT</span><h1>Start something<br />great<span>.</span></h1><p>Create your account and start building an app that works your way.</p></div>
+      <form onSubmit={handleSubmit} className="auth-form auth-register-form" aria-busy={busy}>
+        <div className="auth-field"><label htmlFor="register-name">Full name</label><input id="register-name" name="name" type="text" autoComplete="name" placeholder="Alex Morgan" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} disabled={busy} /></div>
+        <div className="auth-field"><label htmlFor="register-email">Email</label><input id="register-email" name="email" type="email" autoComplete="email" placeholder="you@yourorganization.com" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} disabled={busy} /></div>
+        <div className="auth-field"><label htmlFor="register-password">Password</label><div className="auth-password"><input id="register-password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} disabled={busy} aria-describedby="password-hint" /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} disabled={busy}>{showPassword ? <LuEyeOff aria-hidden="true" /> : <LuEye aria-hidden="true" />}</button></div><span className={`auth-field-hint ${password.length >= 8 ? "auth-hint-valid" : ""}`} id="password-hint"><LuCheck aria-hidden="true" /> At least 8 characters</span></div>
+        {error && <p className="auth-error" role="alert">{error}</p>}
+        <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>{busy ? <><span className="auth-spinner" aria-hidden="true" /> {isLoading ? "Creating account…" : "Checking session…"}</> : <>Create account <LuArrowRight aria-hidden="true" /></>}</button>
+      </form>
+      <p className="auth-switch">Already have an account? <Link to="/login">Sign in <LuArrowRight aria-hidden="true" /></Link></p>
+      <p className="auth-assurance">One account. A world of possibilities.</p>
+    </AuthLayout>
   );
-};
-
-export default Register;
+}

@@ -1,0 +1,21 @@
+.grupedia-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  color: var(--ink, #142b24);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.9px;
+  text-decoration: none;
+}
+
+.grupedia-brand img {
+  display: block;
+  object-fit: contain;
+}
+
+.brand-period {
+  color: var(--green, #147d59);
+}

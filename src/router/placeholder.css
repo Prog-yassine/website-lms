@@ -1,0 +1,25 @@
+.placeholder-page { min-height:100svh; background:radial-gradient(ellipse at 50% 32%,#e8f6ed 0,#f8faf6 43%,#fcfdfb 75%); display:flex; flex-direction:column; }
+.placeholder-header { min-height:92px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.placeholder-signout { display:inline-flex; align-items:center; gap:8px; border:0; padding:12px 0 12px 12px; background:transparent; color:var(--muted); font-size:13px; }
+.placeholder-signout:hover { color:var(--green); }
+.placeholder-main { flex:1; text-align:center; width:min(660px,calc(100% - 36px)); margin:auto; padding:20px 0 60px; }
+.placeholder-art { height:250px; width:300px; max-width:100%; position:relative; margin:0 auto 24px; display:grid; place-items:center; }
+.placeholder-orbit { border:1px solid #c7dfd0; border-radius:50%; position:absolute; }
+.orbit-one { height:164px; width:164px; }
+.orbit-two { height:246px; width:246px; border-style:dashed; opacity:.8; }
+.placeholder-center { width:108px; height:108px; background:#fff; border:1px solid #dbe8de; border-radius:28px; box-shadow:0 16px 50px #1f5a3914; display:grid; place-items:center; transform:rotate(-8deg); }
+.placeholder-center img { transform:rotate(8deg); }
+.placeholder-floating { position:absolute; width:46px; height:46px; border-radius:13px; display:grid; place-items:center; background:#fff; border:1px solid var(--line); box-shadow:0 5px 15px #142b2408; color:var(--green); font-size:22px; }
+.floating-book { top:23px; left:50px; transform:rotate(-12deg); }
+.floating-layers { bottom:30px; right:35px; transform:rotate(10deg); }
+.placeholder-spark { position:absolute; right:35px; top:34px; color:#87b49a; font-size:24px; }
+.placeholder-status { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-size:11px; color:var(--green); font-weight:500; }
+.placeholder-status > span { height:6px; width:6px; border-radius:50%; background:#5baa7c; flex-shrink:0; }
+.placeholder-main h1 { font-size:clamp(46px,7vw,76px); font-weight:550; line-height:1.08; letter-spacing:-.065em; margin:22px 0; }
+.placeholder-main h1 > span { color:var(--green); }
+.placeholder-main > p { max-width:490px; margin:0 auto 30px; color:var(--muted); font-size:15px; }
+.placeholder-main > .placeholder-note { font-size:11px; margin-top:24px; margin-bottom:0; }
+.placeholder-footer { padding:24px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; font-size:11px; color:var(--muted); }
+.placeholder-footer span { border-left:1px solid #cad8ce; padding-left:12px; }
+.not-found-main { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@media(max-width:480px) { .placeholder-header { min-height:80px; } .placeholder-header .grupedia-brand { font-size:20px; } .placeholder-signout { font-size:12px; } .placeholder-art { margin-bottom:10px; height:230px; } .placeholder-main { padding-top:5px; } .placeholder-main > p { font-size:14px; } .placeholder-status { font-size:10px; } }

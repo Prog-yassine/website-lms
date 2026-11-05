@@ -1,0 +1,15 @@
+service,unit,pilot_rate_usd,pilot_quantity,pilot_cost_usd,production_rate_usd,production_quantity,production_cost_usd,assumptions
+RDS PostgreSQL compute,Hrs,0.033,730,24.090,0.130,730,94.900,Pilot:db.t4g.small Single-AZ; production:db.t4g.medium Multi-AZ classic
+RDS gp3 storage,GB-Mo,0.12,20,2.40,0.24,100,24.00,Minimum20GiB pilot;100GiB production; Multi-AZ rate alreadyincludesreplica
+Fargate vCPU,vCPU-Hrs,0.0445,182.50,8.121250,0.0445,730.0,32.48500,Linux x86;pilot1task;production2tasks
+Fargate memory,GB-Hrs,0.0049,365.0,1.78850,0.0049,1460,7.1540,Pilot0.5GB;production1GBpertask
+ALB base,Hrs,0.02394,730,17.47620,0.02394,730,17.47620,1publicALB;IPv4countmodeledseparately
+ALB capacity assumed,LCU-Hrs,0.0076,730,5.5480,0.0076,730,5.5480,Assumptionaverage1LCU/hour—notabenchmark
+ALB public IPv4 assumed,IPv4-Hrs,0.005,1460,7.300,0.005,1460,7.300,Assumption2publicIPv4;maychange
+NAT Gateway classic,Hrs,0.046,730,33.580,0.046,1460,67.160,Pilot1NAT;production1perAZin2AZ
+NAT public IPv4,IPv4-Hrs,0.005,730,3.650,0.005,1460,7.300,1ElasticIPperNAT
+Secrets Manager base,Secret-Mo,0.4,5,2.0,0.4,5,2.0,5secretsassumed;APIcallsnotincluded
+KMS customer-managed key,Key-Mo,1,1,1,1,1,1,1keyassumed;KMSrequestsnotincluded
+Route53 zone,Zone-Mo,0.5,1,0.5,0.5,1,0.5,1zone;queriesanddomainregistrationextra
+CloudWatch budget allowance,Allowance,1,10,10,1,20,20,"BudgetreserveUSD,NOTanAWSfixedprice"
+TOTAL,,,,117.45,,,286.82,Partialinfrastructurebaseline;excludestrafficandapplicationusage
