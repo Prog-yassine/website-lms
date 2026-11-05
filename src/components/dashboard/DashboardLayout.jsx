@@ -13,11 +13,13 @@ const sections = [
   { id: 'database', to: '/dashboard/database', label: 'Database', railLabel: 'Table editor', icon: LuTable2 },
   { id: 'auth', to: '/dashboard/auth', label: 'Authentication', railLabel: 'Authentication', icon: LuShieldCheck },
   { id: 'storage', to: '/dashboard/storage', label: 'Storage', railLabel: 'Storage', icon: LuFileBox },
+  { id: 'api-builder', to: '/dashboard/api-builder', label: 'API Builder', railLabel: 'API Builder', icon: LuBraces },
 ];
 
 function activeSection(pathname) {
   if (pathname === '/dashboard/auth' || pathname.startsWith('/dashboard/auth/')) return 'auth';
   if (pathname === '/dashboard/storage' || pathname.startsWith('/dashboard/storage/')) return 'storage';
+  if (pathname === '/dashboard/api-builder' || pathname.startsWith('/dashboard/api-builder/')) return 'api-builder';
   return 'database';
 }
 
@@ -52,7 +54,7 @@ export default function DashboardLayout() {
   const sidebarButton = useRef(null);
   const project = projects.find((item) => String(item.id) === projectId);
   const section = activeSection(pathname);
-  const sidebarName = section === 'database' ? 'tables' : section === 'auth' ? 'authentication' : 'storage';
+  const sidebarName = section === 'database' ? 'tables' : section === 'auth' ? 'authentication' : section === 'api-builder' ? 'API builder' : 'storage';
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const retryProjects = useCallback(() => setProjectsRevision((value) => value + 1), []);
 
@@ -101,12 +103,11 @@ export default function DashboardLayout() {
 
   return <WorkspaceContext.Provider value={{ projectId, project, projectsLoading, projectsError, retryProjects, sidebarOpen, closeSidebar }}>
     <div className="db-shell">
-      <a href={section === 'database' ? '#database-editor' : '#workspace-content'} className="db-skip-link">Skip to {section === 'database' ? 'table editor' : section === 'auth' ? 'authentication' : 'storage'}</a>
+      <a href={section === 'database' ? '#database-editor' : '#workspace-content'} className="db-skip-link">Skip to {section === 'database' ? 'table editor' : section === 'auth' ? 'authentication' : section === 'api-builder' ? 'API builder' : 'storage'}</a>
       <nav className="db-rail" aria-label="Project tools">
         <Link to="/" className="db-rail-brand" aria-label="Grupedia home"><img src={`${process.env.PUBLIC_URL || ''}/logo.svg`} alt="" width="31" height="29" /></Link>
         <div className="db-rail-tools">
           {sections.map(({ id, to, railLabel, icon: Icon }) => <Link key={id} to={to} className={`db-rail-button${section === id ? ' is-active' : ''}`} aria-label={railLabel} aria-current={section === id ? 'page' : undefined} title={railLabel}><Icon aria-hidden="true" /></Link>)}
-          <button className="db-rail-button" type="button" disabled aria-label="Functions — coming soon" title="Functions — coming soon"><LuBraces /></button>
         </div>
         <Link className="db-rail-button db-rail-help" to="/docs" aria-label="Documentation" title="Documentation"><LuBookOpen /></Link>
         <span className="db-rail-avatar" title={user?.email || 'Your account'}>{(user?.name || user?.email || 'G').charAt(0).toUpperCase()}</span>

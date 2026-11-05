@@ -1,6 +1,6 @@
 # API REST de Grupedia
 
-Cette API implémente les comptes développeurs Grupedia, l’authentification des utilisateurs de leurs applications, la consultation de données de test et la gestion de fichiers privés. Les deux types de comptes et de sessions sont distincts. Elle utilise une base SQLite locale en développement et un binding Cloudflare D1 `DB` en hébergement, ainsi qu’un binding R2 `BUCKET` pour les contenus des fichiers. Aucune infrastructure AWS, base PostgreSQL distante ou fonctionnalité de facturation n’est provisionnée par ces routes.
+Cette API implémente les comptes développeurs Grupedia, l’authentification des utilisateurs de leurs applications, les endpoints de données définis dans API Builder et la gestion de fichiers privés. Les deux types de comptes et de sessions sont distincts. Elle utilise une base SQLite locale en développement et un binding Cloudflare D1 `DB` en hébergement, ainsi qu’un binding R2 `BUCKET` pour les contenus des fichiers. Aucune infrastructure AWS, base PostgreSQL distante ou fonctionnalité de facturation n’est provisionnée par ces routes.
 
 Le point d’entrée est `handleApi(request, env)` dans `server/worker.js`. Le serveur et l’interface utilisent la même origine : `http://127.0.0.1:8787` en développement complet, ou l’URL du site hébergé.
 
@@ -11,7 +11,7 @@ Le point d’entrée est `handleApi(request, env)` dans `server/worker.js`. Le s
 - Les routes protégées du tableau de bord attendent `Authorization: Bearer <developer-access-token>` ; le cookie seul ne donne pas directement accès aux données. Le JWT d’un utilisateur d’application n’est pas accepté par ces routes.
 - Les erreurs suivent `{ "error": "message" }` et ne renvoient ni requêtes SQL, ni traces internes, ni secrets.
 - Les mutations privées du tableau de bord qui contiennent un en-tête `Origin` doivent correspondre exactement à l’origine de l’URL demandée. Les clients REST sans cet en-tête sont acceptés.
-- Les routes publiques `/api/apps/:projectId/auth/*` appliquent une politique CORS propre au projet : origine exacte autorisée, origine du service ou appel serveur sans `Origin`. Leurs prérequêtes `OPTIONS` suivent cette même politique. Aucun joker CORS ni cookie développeur n’est utilisé.
+- Les routes d’application `/api/apps/:projectId/auth/*` et `/api/apps/:projectId/data/*` appliquent une politique CORS propre au projet : origine exacte autorisée, origine du service ou appel serveur sans `Origin`. Leurs prérequêtes `OPTIONS` suivent cette même politique. Aucun joker CORS ni cookie développeur n’est utilisé.
 
 ## Authentification des développeurs Grupedia
 
@@ -152,7 +152,138 @@ Réponse illustrative, abrégée :
 }
 ```
 
-`rowCount` et `totalPages` correspondent au filtre courant. Sans résultat, `rows` est vide et `totalPages` vaut `0`. Une page au-delà du dernier résultat renvoie une liste vide. Aucune route de création, modification ou suppression de projet, table ou ligne n’est fournie dans ce MVP.
+`rowCount` et `totalPages` correspondent au filtre courant. Sans résultat, `rows` est vide et `totalPages` vaut `0`. Une page au-delà du dernier résultat renvoie une liste vide. Ces routes du Table Editor restent en lecture seule. Les écritures sur les données de `main` passent par les endpoints explicitement définis dans [API Builder](#api-builder-et-endpoints-de-données) ; la création de tables et l’exécution SQL libre ne sont pas proposées.
+
+## API Builder et endpoints de données
+
+API Builder configure des endpoints sur les seules tables `main.products`, `main.customers` et `main.orders`. Le catalogue contient les colonnes visibles et leurs types, les champs modifiables, les corps d’exemple, les opérateurs et les relations autorisées. Les comptes, sessions, tables `auth`, colonnes internes et requêtes SQL libres sont exclus. Une définition est un objet JSON validé ; aucun code JavaScript saisi dans l’interface n’est exécuté.
+
+### Administration des définitions
+
+Toutes ces routes exigent le JWT du propriétaire Grupedia et la propriété du projet. Les corps JSON sont limités à **16 KiB** et les champs inconnus sont refusés.
+
+| Méthode et route sous `/api/projects/:projectId/api-builder` | Corps / résultat |
+|---|---|
+| `GET /catalog` | `{ tables, operators, limits }` |
+| `GET /endpoints` | `{ endpoints, limits }` |
+| `GET /endpoints/:endpointId` | `{ endpoint }` |
+| `POST /endpoints` | `{ definition }` → `201`, `{ endpoint }` |
+| `PUT /endpoints/:endpointId` | `{ definition, revision }` → brouillon enregistré |
+| `POST /endpoints/:endpointId/publish` | `{ revision }` → copie du brouillon publiée |
+| `POST /endpoints/:endpointId/unpublish` | `{ revision }` → accès public/applicatif fermé |
+| `DELETE /endpoints/:endpointId?revision=N` | Supprime la définition, sans supprimer les lignes de ses tables |
+| `POST /test` | `{ definition, params?, body?, id? }` → exécution réelle et diagnostic du propriétaire |
+
+Une ressource `endpoint` contient `id`, `definition` (brouillon), `publishedDefinition` (copie active ou `null`), `isPublished`, `hasUnpublishedChanges`, `revision`, les dates `createdAt`, `updatedAt`, `publishedAt`, et `runtimeUrl`. Une création commence à la révision `1`. Chaque modification, publication ou dépublication incrémente cette révision. Une révision périmée reçoit `409` : recharger la définition avant de réessayer.
+
+Enregistrer un brouillon ne change pas sa copie publiée. La route et la méthode actives restent celles de `publishedDefinition` jusqu’à la prochaine publication, et `runtimeUrl` continue de les désigner. Pour une définition jamais publiée, cette URL indique sa future route. Publier deux définitions avec la même méthode et le même chemin dans un projet est refusé avec `409`. Un projet accepte au maximum **25 définitions**, publiées ou non.
+
+### Définition JSON
+
+Exemple de lecture des produits, avec filtre facultatif sur le nom :
+
+```json
+{
+  "name": "Search products",
+  "path": "/products",
+  "method": "GET",
+  "table": "products",
+  "columns": ["id", "name", "price", "stock", "status"],
+  "filters": [
+    {
+      "column": "name",
+      "operator": "contains",
+      "source": "query",
+      "parameter": "q",
+      "required": false
+    }
+  ],
+  "orderBy": { "column": "price", "direction": "asc" },
+  "limit": 25,
+  "access": "app_user",
+  "include": [],
+  "defaults": {}
+}
+```
+
+| Champ | Règles |
+|---|---|
+| `name` | De 1 à 80 caractères, sans caractères de contrôle |
+| `path` | De 1 à 3 segments minuscules commençant par une lettre, séparés par `/` ; lettres, chiffres et tirets ; 120 caractères maximum |
+| `method` | `GET`, `POST`, `PATCH` ou `DELETE` ; défaut `GET` |
+| `table` | `products`, `customers` ou `orders` |
+| `columns` | Liste non vide et sans doublon des colonnes renvoyées ; défaut : toutes les colonnes visibles |
+| `filters` | Jusqu’à 20 conditions combinées par `AND` ; vide pour `POST` |
+| `orderBy` | `{ column, direction: "asc" ou "desc" }`, ou `null` ; lecture uniquement ; défaut `id` croissant |
+| `limit` | De 1 à 100 lignes par page ; défaut `25` |
+| `access` | `app_user`, `developer` ou `public` ; défaut `app_user` pour `GET`, `developer` pour une mutation |
+| `include` | Pour `GET orders` uniquement : `product`, `customer`, ou les deux |
+| `defaults` | Valeurs par défaut des champs modifiables, pour `POST` uniquement ; le corps envoyé peut les remplacer |
+
+Les opérateurs sont `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `contains`, `in` et `is_null`. `contains` s’applique aux colonnes texte et traite `%`, `_` et `\` comme des caractères littéraux. `in` accepte de 1 à 20 valeurs ; une valeur de requête peut être une liste séparée par des virgules ou un tableau JSON encodé. `is_null` attend un booléen, ou `true`/`false` dans la chaîne de requête. Les types numériques, les valeurs nulles et les noms de colonnes sont contrôlés côté serveur.
+
+Un filtre fixe utilise `{ "column": "status", "operator": "eq", "source": "literal", "value": "active" }`. Un filtre dynamique utilise `source: "query"` et `parameter`, sans `value`. Son nom de paramètre comporte jusqu’à 64 lettres, chiffres ou traits de soulignement et commence par une lettre ou un trait de soulignement. Si `required` vaut `true`, son absence renvoie `400` ; sinon la condition est ignorée. Les paramètres internes de projet sont réservés.
+
+Les relations de `orders` renvoient des objets imbriqués : `product` contient `id`, `name`, `price` ; `customer` contient `id`, `name`, `email`. La jointure vérifie aussi le projet de la ligne liée. Une relation absente vaut `null`.
+
+### Accès et exécution des routes publiées
+
+L’URL d’exécution est `/api/apps/:projectId/data` suivie du `path` publié. Un identifiant numérique peut être ajouté après ce chemin pour cibler une ligne. Un endpoint non publié ou une combinaison méthode/chemin inexistante reçoit `404`.
+
+- `app_user` exige le JWT d’un utilisateur de l’application de ce projet, avec une session encore valide.
+- `developer` exige le JWT du propriétaire Grupedia. Il doit rester dans un environnement de confiance ; ne pas l’intégrer au code distribué d’un site client.
+- `public` permet un `GET` anonyme uniquement. Les mutations publiques sont refusées à la validation.
+
+Accorder `app_user` à `POST`, `PATCH` ou `DELETE` autorise les utilisateurs connectés de l’application à effectuer cette opération sur les lignes correspondant à la définition dans leur projet. Ce prototype ne crée pas de règle de propriété par utilisateur d’application. Les filtres définis et l’isolation par projet restent appliqués côté serveur ; le client ne peut pas remplacer `project_id`.
+
+Les origines autorisées dans Authentication → Providers s’appliquent également aux routes de données. Les prérequêtes acceptent `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`, ainsi que `Content-Type` et `Authorization`, sans cookies ni `Access-Control-Allow-Credentials`. Une origine interdite reçoit `403`, même pour un endpoint `public`. Un appel serveur sans en-tête `Origin` est accepté.
+
+Exemple JavaScript pour l’endpoint précédent après publication :
+
+```js
+const url = new URL('https://<grupedia-host>/api/apps/<project-id>/data/products');
+url.search = new URLSearchParams({ q: 'canvas', page: '1', pageSize: '10' });
+const response = await fetch(url, {
+  credentials: 'omit',
+  headers: { Authorization: 'Bearer <app-access-token>' }
+});
+if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+const result = await response.json();
+console.log(result.data, result.pagination);
+```
+
+Équivalent cURL, avec un jeton d’application obtenu séparément :
+
+```sh
+curl 'https://<grupedia-host>/api/apps/<project-id>/data/products?q=canvas&page=1&pageSize=10' \
+  -H 'Authorization: Bearer <app-access-token>'
+```
+
+`GET` accepte `page` (entier positif), `pageSize` (de 1 à la limite de la définition), `id` et les paramètres liés aux filtres. Un même paramètre répété est refusé. Il ne reçoit aucun corps. Le résultat a cette forme :
+
+```json
+{
+  "data": [{ "id": 1, "name": "Canvas tote bag", "price": 18, "stock": 42, "status": "active" }],
+  "pagination": { "page": 1, "pageSize": 10, "totalRows": 1, "totalPages": 1 },
+  "meta": { "table": "products", "method": "GET" }
+}
+```
+
+Sans résultat, `data` est vide et `totalPages` vaut `1`. Une page au-delà des résultats renvoie une liste vide. Un tri par une autre colonne ajoute `id` croissant pour départager les valeurs égales.
+
+`POST` attend un objet JSON contenant les champs modifiables nécessaires, éventuellement complétés par `defaults`. Il alloue l’identifiant et la date serveur ; `id`, `created_at` et `project_id` ne sont pas modifiables. `PATCH` exige un identifiant positif dans le chemin ou dans `?id=`, et au moins un champ modifiable. `DELETE` exige également cet identifiant et un corps vide. Fournir deux identifiants différents est refusé. Les filtres configurés continuent de s’appliquer à `PATCH` et `DELETE` : une ligne absente ou ne correspondant pas au filtre reçoit `404`.
+
+Les nombres doivent être finis, les entiers sûrs et les valeurs de prix, stock ou montant supérieures ou égales à zéro. Les identifiants de relation et la quantité d’une commande doivent être strictement positifs ; les relations doivent appartenir au même projet. Le texte est limité à 2 000 caractères, les champs obligatoires ne peuvent pas être vides et un e-mail client est validé. Une suppression qui laisserait une commande sans produit ou client est refusée avec `409`.
+
+Les réponses de `POST` (`201`) et `PATCH` (`200`) contiennent `{ data: <ligne>, meta: { table, method, affectedRows: 1 } }`. `DELETE` renvoie `{ data: { id }, meta: { affectedRows: 1 } }`. Une mutation ne modifie qu’une ligne par requête.
+
+### Tester et modifier le code
+
+`POST /test` exécute la définition fournie directement sur les données du projet, même si son brouillon n’a pas été enregistré ou publié. Le propriétaire est l’acteur de ce test ; ce résultat ne valide donc pas à lui seul les droits d’un utilisateur d’application ou d’un client anonyme. La réponse est `{ status, body, durationMs, sql, parameters }` : `body` est la réponse réelle et `sql`/`parameters` présentent le SQL généré uniquement au propriétaire authentifié.
+
+Les tests `POST`, `PATCH` et `DELETE` **écrivent réellement** dans la base. L’interface demande confirmation avant de les envoyer. Employer des lignes de test et les nettoyer ensuite ; aucun mode de simulation ni annulation automatique n’est fourni.
+
+Dans Code, modifier **Endpoint definition (JSON)** puis utiliser **Apply JSON** met à jour le brouillon de l’interface. **Save draft** le conserve côté serveur et **Publish** met à jour la route active. Les exemples JavaScript et cURL correspondent à la dernière version publiée, ou au brouillon lorsque l’endpoint n’a pas encore été publié. Ils utilisent des jetons fictifs ; l’export JSON ne contient pas de secret de session.
 
 ## Interface Authentication
 
@@ -185,7 +316,7 @@ Toutes les sessions affichées sont révocables : il n’existe pas de session d
 
 ## Authentification des utilisateurs d’application
 
-L’URL de base est `/api/apps/:projectId/auth`. `projectId` est l’identifiant public du projet, pas un secret ni une clé administrateur. Ces routes ne demandent aucun identifiant développeur. Elles ne donnent accès ni au tableau de bord, ni aux tables, ni au stockage privé.
+L’URL de base est `/api/apps/:projectId/auth`. `projectId` est l’identifiant public du projet, pas un secret ni une clé administrateur. Ces routes ne demandent aucun identifiant développeur. Elles ne donnent accès ni au tableau de bord, ni aux routes privées du Table Editor, ni au stockage privé. Leur JWT peut être utilisé séparément sur les endpoints de données publiés avec l’accès `app_user` dans API Builder.
 
 | Méthode et route relative | Corps / justificatif | Résultat |
 |---|---|---|
@@ -323,7 +454,7 @@ Le premier compteur dépassé renvoie `429` et un en-tête `Retry-After` en seco
 | `401` | Identifiants incorrects, JWT absent/invalide/expiré ou session révoquée |
 | `403` | Origine interdite |
 | `404` | Route, projet ou table absent/non accessible |
-| `409` | Ressource existante ou limite de bucket/fichiers atteinte |
+| `409` | Ressource existante, révision obsolète, relation bloquante ou limite de ressources atteinte |
 | `413` | Corps trop volumineux |
 | `415` | Type de contenu incorrect |
 | `429` | Trop de tentatives ; respecter `Retry-After` |

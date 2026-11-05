@@ -10,10 +10,11 @@ import NotFound from './router/not-found';
 import Dashboard from './router/dashboard';
 import Authentication from './router/authentication';
 import Storage from './router/storage';
+import ApiBuilder from './router/api-builder';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
-const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon', '/dashboard': 'Table editor', '/dashboard/database': 'Table editor', '/dashboard/auth': 'Authentication', '/dashboard/storage': 'Storage' };
+const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon', '/dashboard': 'Table editor', '/dashboard/database': 'Table editor', '/dashboard/auth': 'Authentication', '/dashboard/storage': 'Storage', '/dashboard/api-builder': 'API Builder' };
 
 function RouteEffects() {
   const { pathname, hash } = useLocation();
@@ -56,6 +57,7 @@ export function AppRoutes() {
         <Route path="database" element={<Dashboard />} />
         <Route path="auth" element={<Authentication />} />
         <Route path="storage" element={<Storage />} />
+        <Route path="api-builder" element={<ApiBuilder />} />
       </Route>
       <Route path="/dashboard/*" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />

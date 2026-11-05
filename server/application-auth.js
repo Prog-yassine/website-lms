@@ -155,6 +155,12 @@ function corsHeaders(request, settings) {
   return { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' };
 }
 
+/** Project API routes share the app's exact-origin policy without sharing cookies. */
+export async function appCors(request, env, projectId) {
+  await requireProject(env, projectId);
+  return corsHeaders(request, await readAppSettings(env, projectId));
+}
+
 async function readJson(request, optional = false) {
   const declared = request.headers.get('Content-Length');
   if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > MAX_BODY_BYTES)) throw new AppAuthError(413, 'Request body is too large');
@@ -267,6 +273,9 @@ async function authenticate(request, env, projectId) {
   if (updated.meta.changes !== 1) throw new AppAuthError(401, 'Application session expired. Please sign in again');
   return publicUser(record);
 }
+
+// Runtime application APIs reuse the exact project-scoped, live-session verification.
+export { authenticate as authenticateApplicationUser };
 
 async function login(request, env, projectId) {
   const data = credentials(await readJson(request));

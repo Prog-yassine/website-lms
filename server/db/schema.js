@@ -160,3 +160,22 @@ export const appAuthSettings = sqliteTable("app_auth_settings", {
   primaryKey({ columns: [table.projectId] }),
   check("app_auth_settings_signup_enabled_check", sql`${table.signupEnabled} IN (0, 1)`),
 ]);
+
+
+export const apiEndpoints = sqliteTable("api_endpoints", {
+  id: text("id"),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  definition: text("definition").notNull(),
+  publishedDefinition: text("published_definition"),
+  publishedMethod: text("published_method"),
+  publishedPath: text("published_path"),
+  revision: integer("revision").notNull().default(1),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+  publishedAt: text("published_at"),
+}, (table) => [
+  primaryKey({ columns: [table.id] }),
+  unique("api_endpoints_published_route_unique").on(table.projectId, table.publishedMethod, table.publishedPath),
+  index("api_endpoints_project_id").on(table.projectId),
+  check("api_endpoints_revision_check", sql`${table.revision} >= 1`),
+]);

@@ -104,7 +104,7 @@ test('the dashboard guard waits for the cookie session before sending an anonymo
   expect(screen.queryByRole('table')).not.toBeInTheDocument();
 });
 
-test.each(['/dashboard/database', '/dashboard/auth', '/dashboard/storage', '/dashboard/org', '/dashboard/division/old-project/database'])(
+test.each(['/dashboard/database', '/dashboard/auth', '/dashboard/storage', '/dashboard/api-builder', '/dashboard/org', '/dashboard/division/old-project/database'])(
   'anonymous access to %s requires login and never loads project data', async (path) => {
     visit(path);
     expect(await screen.findByRole('heading', { name: /welcome back/i })).toBeInTheDocument();

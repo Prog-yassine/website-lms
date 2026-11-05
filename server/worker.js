@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { handleApiBuilder } from "./api-builder.js";
 import { AppAuthError, createApplicationUser, handleApplicationAuth, readAppSettings } from "./application-auth.js";
 
 const ACCESS_SECONDS = 15 * 60;
@@ -770,6 +771,8 @@ export async function handleApi(request, env) {
     // Dashboard endpoints below retain the stricter same-origin owner policy.
     const applicationResponse = await handleApplicationAuth(request, env);
     if (applicationResponse) return applicationResponse;
+    const builderResponse = await handleApiBuilder(request, env, { authenticateBuilder: authenticate, requireProject, assertOrigin });
+    if (builderResponse) return builderResponse;
     if (request.method === "OPTIONS") {
       assertOrigin(request);
       return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": url.origin, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Vary": "Origin", "Cache-Control": "no-store" } });

@@ -134,3 +134,22 @@ CREATE TABLE IF NOT EXISTS app_auth_settings (
   signup_enabled INTEGER NOT NULL DEFAULT 1 CHECK (signup_enabled IN (0, 1)),
   updated_at TEXT NOT NULL
 );
+
+
+-- API drafts and published snapshots are independent so editing never silently
+-- changes a live application route. Configuration only; application data stays
+-- in the project's main tables.
+CREATE TABLE IF NOT EXISTS api_endpoints (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  definition TEXT NOT NULL,
+  published_definition TEXT,
+  published_method TEXT,
+  published_path TEXT,
+  revision INTEGER NOT NULL DEFAULT 1 CHECK (revision >= 1),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  published_at TEXT,
+  UNIQUE (project_id, published_method, published_path)
+);
+CREATE INDEX IF NOT EXISTS api_endpoints_project_id ON api_endpoints(project_id);

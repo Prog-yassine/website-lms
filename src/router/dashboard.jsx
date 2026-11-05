@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   LuArrowLeftToLine, LuArrowRightToLine,
   LuCheck, LuChevronDown, LuChevronLeft, LuChevronRight, LuCode,
@@ -49,6 +49,7 @@ function ApiDialog({ project, table, schema, onClose }) {
       <p>A read-only request for <strong>{table.name}</strong>. This example uses a placeholder, never your session credentials.</p>
       <pre><code>{`fetch('${path}', {\n  headers: {\n    Authorization: 'Bearer <ACCESS_TOKEN>'\n  }\n})\n  .then(response => response.json())\n  .then(data => console.log(data.rows));`}</code></pre>
       <div className="db-dialog-note"><LuShieldCheck aria-hidden="true" /><span>Your project and table permissions also apply to API requests.</span></div>
+      {schema === 'main' && ['products', 'customers', 'orders'].includes(table.id) && <p><Link className="db-button" to={`/dashboard/api-builder?table=${encodeURIComponent(table.id)}`} onClick={onClose}>Open API Builder <LuExternalLink aria-hidden="true" /></Link></p>}
       <button type="button" className="db-button db-button-primary" onClick={onClose}>Got it <LuCheck aria-hidden="true" /></button>
     </div>
   </dialog>;
