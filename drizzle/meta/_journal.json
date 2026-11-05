@@ -15,6 +15,13 @@
       "when": 1793791843474,
       "tag": "0001_storage_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793881057931,
+      "tag": "0002_application_end_user_auth",
+      "breakpoints": true
     }
   ]
 }

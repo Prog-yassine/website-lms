@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { AppAuthError, createApplicationUser, handleApplicationAuth, readAppSettings } from "./application-auth.js";
 
 const ACCESS_SECONDS = 15 * 60;
 const REFRESH_SECONDS = 7 * 24 * 60 * 60;
@@ -43,14 +44,16 @@ const TABLES = Object.freeze({
 const AUTH_TABLES = Object.freeze({
   users: {
     name: "users",
-    description: "Your project owner account. Credential fields are never exposed.",
-    scopeColumn: "id",
-    columns: [column("id", "TEXT", false, true), column("name", "TEXT"), column("email", "TEXT"), column("created_at", "TEXT")],
+    description: "End users registered in this application project. Credential fields are never exposed.",
+    table: "app_auth_users",
+    scopeColumn: "project_id",
+    columns: [column("id", "TEXT", false, true), column("name", "TEXT"), column("email", "TEXT"), column("created_at", "TEXT"), column("last_sign_in_at", "TEXT", true)],
   },
   sessions: {
     name: "sessions",
-    description: "Your account session history. Expiry and revocation values are Unix timestamps in seconds.",
-    scopeColumn: "user_id",
+    description: "Application end-user session history. Expiry and revocation values are Unix timestamps in seconds.",
+    table: "app_auth_sessions",
+    scopeColumn: "project_id",
     columns: [column("id", "TEXT", false, true), column("user_id", "TEXT"), column("created_at", "TEXT"), column("updated_at", "TEXT"), column("expires_at", "INTEGER"), column("revoked_at", "INTEGER", true)],
   },
 });
@@ -374,10 +377,11 @@ async function listTables(request, env, projectId, userId) {
   await requireProject(env, projectId, userId);
   const { schema, tables } = tableNamespace(request);
   const entries = Object.entries(tables);
-  const scopeValue = schema === "auth" ? userId : projectId;
+  const scopeValue = projectId;
   const results = await env.DB.batch(entries.map(([id, definition]) => {
-    const scopeColumn = schema === "auth" ? definition.scopeColumn : "project_id";
-    return env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${id}" WHERE "${scopeColumn}" = ?`).bind(scopeValue);
+    const scopeColumn = definition.scopeColumn || "project_id";
+    const physicalTable = definition.table || id;
+    return env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${physicalTable}" WHERE "${scopeColumn}" = ?`).bind(scopeValue);
   }));
   return json({ tables: entries.map(([id, definition], index) => ({ id, name: definition.name, schema, rowCount: results[index].results[0].row_count, description: definition.description })) });
 }
@@ -401,8 +405,9 @@ async function listRows(request, env, projectId, tableId, userId) {
   const pageSize = positiveInteger(params.get("pageSize"), 25, 100);
   const search = (params.get("search") || "").trim();
   if (search.length > 200) throw new ApiError(400, "Search must contain at most 200 characters");
-  const values = [schema === "auth" ? userId : projectId];
-  const scopeColumn = schema === "auth" ? definition.scopeColumn : "project_id";
+  const values = [projectId];
+  const scopeColumn = definition.scopeColumn || "project_id";
+  const physicalTable = definition.table || tableId;
   let where = `"${scopeColumn}" = ?`;
   if (search) {
     const pattern = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
@@ -412,8 +417,8 @@ async function listRows(request, env, projectId, tableId, userId) {
   // Identifiers originate exclusively from the static allowlist; all request values are bound.
   const select = definition.columns.map(({ name }) => `"${name}"`).join(", ");
   const results = await env.DB.batch([
-    env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${tableId}" WHERE ${where}`).bind(...values),
-    env.DB.prepare(`SELECT ${select} FROM "${tableId}" WHERE ${where} ORDER BY id ASC LIMIT ? OFFSET ?`).bind(...values, pageSize, (page - 1) * pageSize),
+    env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${physicalTable}" WHERE ${where}`).bind(...values),
+    env.DB.prepare(`SELECT ${select} FROM "${physicalTable}" WHERE ${where} ORDER BY id ASC LIMIT ? OFFSET ?`).bind(...values, pageSize, (page - 1) * pageSize),
   ]);
   const rowCount = results[0].results[0].row_count;
   return json({ table: { id: tableId, name: definition.name, schema }, columns: definition.columns, rows: results[1].results, page, pageSize, rowCount, totalPages: Math.ceil(rowCount / pageSize) });
@@ -422,25 +427,83 @@ async function listRows(request, env, projectId, tableId, userId) {
 const STORAGE_LIMITS = Object.freeze({ maxFileBytes: 5 * 1024 * 1024, maxBuckets: 5, maxFilesPerBucket: 50 });
 const MAX_PROJECT_BYTES = 25 * 1024 * 1024;
 
-async function projectAuthOverview(env, user, currentSessionId) {
-  const [signIn, activeSessions] = await env.DB.batch([
-    env.DB.prepare("SELECT MAX(created_at) AS last_sign_in FROM sessions WHERE user_id = ?").bind(user.id),
-    env.DB.prepare("SELECT id, created_at, updated_at, expires_at FROM sessions WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ? ORDER BY created_at DESC, id ASC").bind(user.id, nowSeconds()),
+function publicApplicationUser(record) {
+  return { id: record.id, name: record.name, email: record.email, createdAt: record.created_at, lastSignInAt: record.last_sign_in_at, provider: "email", role: "authenticated" };
+}
+
+async function projectAuthOverview(request, env, projectId) {
+  const now = nowSeconds();
+  const [users, activeSessions, totals] = await env.DB.batch([
+    env.DB.prepare("SELECT id, name, email, created_at, last_sign_in_at FROM app_auth_users WHERE project_id = ? ORDER BY created_at DESC, id ASC LIMIT 1000").bind(projectId),
+    env.DB.prepare(`
+      SELECT app_auth_sessions.id, app_auth_sessions.user_id, app_auth_users.email,
+        app_auth_sessions.created_at, app_auth_sessions.updated_at, app_auth_sessions.expires_at
+      FROM app_auth_sessions JOIN app_auth_users
+        ON app_auth_users.id = app_auth_sessions.user_id AND app_auth_users.project_id = app_auth_sessions.project_id
+      WHERE app_auth_sessions.project_id = ? AND app_auth_sessions.revoked_at IS NULL AND app_auth_sessions.expires_at > ?
+      ORDER BY app_auth_sessions.created_at DESC, app_auth_sessions.id ASC LIMIT 200
+    `).bind(projectId, now),
+    env.DB.prepare(`
+      SELECT (SELECT COUNT(*) FROM app_auth_users WHERE project_id = ?) AS user_count,
+        (SELECT COUNT(*) FROM app_auth_sessions WHERE project_id = ? AND revoked_at IS NULL AND expires_at > ?) AS session_count
+    `).bind(projectId, projectId, now),
   ]);
+  const basePath = `/api/apps/${projectId}/auth`;
   return json({
-    users: [{ ...user, role: "owner", provider: "email", lastSignInAt: signIn.results[0]?.last_sign_in || null }],
-    sessions: activeSessions.results.map((session) => ({ id: session.id, createdAt: session.created_at, lastUsedAt: session.updated_at, expiresAt: new Date(session.expires_at * 1000).toISOString(), current: session.id === currentSessionId })),
+    users: users.results.map(publicApplicationUser),
+    sessions: activeSessions.results.map((session) => ({ id: session.id, userId: session.user_id, email: session.email, createdAt: session.created_at, lastUsedAt: session.updated_at, expiresAt: new Date(session.expires_at * 1000).toISOString() })),
     providers: [{ id: "email", name: "Email and password", enabled: true }, { id: "google", name: "Google", enabled: false }, { id: "github", name: "GitHub", enabled: false }],
-    settings: { accessTokenSeconds: ACCESS_SECONDS, refreshTokenSeconds: REFRESH_SECONDS, passwordMinLength: 8 },
+    settings: await readAppSettings(env, projectId),
+    integration: { projectId, authUrl: `${new URL(request.url).origin}${basePath}`, basePath },
+    totals: { users: totals.results[0].user_count, activeSessions: totals.results[0].session_count },
   });
 }
 
-async function revokeProjectSession(env, userId, currentSessionId, sessionId) {
+async function revokeProjectSession(env, projectId, sessionId) {
   if (!UUID.test(sessionId)) throw new ApiError(404, "Session not found");
-  if (sessionId === currentSessionId) throw new ApiError(409, "Use Sign out to end your current session");
-  const result = await env.DB.prepare("UPDATE sessions SET revoked_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND revoked_at IS NULL AND expires_at > ?").bind(nowSeconds(), new Date().toISOString(), sessionId, userId, nowSeconds()).run();
+  const result = await env.DB.prepare("UPDATE app_auth_sessions SET revoked_at = ?, updated_at = ? WHERE id = ? AND project_id = ? AND revoked_at IS NULL AND expires_at > ?").bind(nowSeconds(), new Date().toISOString(), sessionId, projectId, nowSeconds()).run();
   if (result.meta.changes !== 1) throw new ApiError(404, "Session not found");
-  return json({ message: "Session revoked" });
+  return json({ message: "Application session revoked" });
+}
+
+function applicationOrigins(value) {
+  if (!Array.isArray(value) || value.length > 10) throw new ApiError(400, "Provide up to 10 allowed origins");
+  const origins = [];
+  for (const entry of value) {
+    if (typeof entry !== "string" || entry.length > 2048 || /[*?#@\x00-\x1f\x7f]/.test(entry)) throw new ApiError(400, "Provide exact HTTPS origins or HTTP localhost origins with a port");
+    const text = entry.trim();
+    let url;
+    try {
+      url = new URL(text);
+    } catch {
+      throw new ApiError(400, "Provide a valid allowed origin");
+    }
+    const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    const explicitLocalPort = /^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):([0-9]+)\/?$/i.exec(text);
+    const allowedProtocol = url.protocol === "https:" || (url.protocol === "http:" && local && explicitLocalPort && Number(explicitLocalPort[1]) > 0);
+    if (!allowedProtocol || !url.hostname || url.hostname.includes("*") || url.username || url.password || url.pathname !== "/" || url.search || url.hash || url.origin === "null") throw new ApiError(400, "Use an HTTPS origin, or HTTP localhost with a port, without credentials, paths, query strings, or fragments");
+    if (!origins.includes(url.origin)) origins.push(url.origin);
+  }
+  return origins;
+}
+
+async function updateApplicationSettings(request, env, projectId) {
+  const body = await readJson(request);
+  if (typeof body.signupEnabled !== "boolean") throw new ApiError(400, "signupEnabled must be a boolean");
+  const origins = applicationOrigins(body.allowedOrigins);
+  await env.DB.prepare(`
+    INSERT INTO app_auth_settings (project_id, allowed_origins, signup_enabled, updated_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT (project_id) DO UPDATE SET allowed_origins = excluded.allowed_origins,
+      signup_enabled = excluded.signup_enabled, updated_at = excluded.updated_at
+  `).bind(projectId, JSON.stringify(origins), body.signupEnabled ? 1 : 0, new Date().toISOString()).run();
+  return json({ settings: await readAppSettings(env, projectId) });
+}
+
+async function createProjectApplicationUser(request, env, projectId) {
+  const body = await readJson(request);
+  const user = await createApplicationUser(env, projectId, body, { admin: true });
+  return json({ user }, 201);
 }
 
 function configuredStorage(env) {
@@ -665,18 +728,21 @@ function decodePathSegment(value) {
 }
 
 async function handleProjectSection(request, env, path) {
-  const authRoute = /^\/api\/projects\/([^/]+)\/auth(?:\/sessions\/([^/]+))?$/.exec(path);
+  const authRoute = /^\/api\/projects\/([^/]+)\/auth(?:\/(users|settings)|\/sessions\/([^/]+))?$/.exec(path);
   const storageRoute = /^\/api\/projects\/([^/]+)\/storage\/buckets(?:\/([^/]+)(?:\/objects(?:\/([^/]+)(\/content)?)?)?)?$/.exec(path);
   if (!authRoute && !storageRoute) return null;
-  const { user, sessionId } = await authenticate(request, env);
+  const { user } = await authenticate(request, env);
   const projectId = decodePathSegment((authRoute || storageRoute)[1]);
   // Every section lookup and mutation follows this project ownership check.
   await requireProject(env, projectId, user.id);
   if (request.method === "DELETE") await readJson(request, true);
   if (authRoute) {
-    const targetSessionId = authRoute[2] && decodePathSegment(authRoute[2]);
-    if (request.method === "GET" && !targetSessionId) return projectAuthOverview(env, user, sessionId);
-    if (request.method === "DELETE" && targetSessionId) return revokeProjectSession(env, user.id, sessionId, targetSessionId);
+    const section = authRoute[2];
+    const targetSessionId = authRoute[3] && decodePathSegment(authRoute[3]);
+    if (request.method === "GET" && !section && !targetSessionId) return projectAuthOverview(request, env, projectId);
+    if (request.method === "POST" && section === "users") return createProjectApplicationUser(request, env, projectId);
+    if (request.method === "PUT" && section === "settings") return updateApplicationSettings(request, env, projectId);
+    if (request.method === "DELETE" && targetSessionId) return revokeProjectSession(env, projectId, targetSessionId);
     throw new ApiError(404, "API route not found");
   }
   const bucketId = storageRoute[2] && decodePathSegment(storageRoute[2]);
@@ -700,9 +766,13 @@ export async function handleApi(request, env) {
     const path = url.pathname.replace(/\/+$/, "") || "/";
     if (!path.startsWith("/api/")) throw new ApiError(404, "API route not found");
     if (!env.DB) throw new ApiError(503, "Service is temporarily unavailable");
+    // Public application auth has its own project CORS policy and token audience.
+    // Dashboard endpoints below retain the stricter same-origin owner policy.
+    const applicationResponse = await handleApplicationAuth(request, env);
+    if (applicationResponse) return applicationResponse;
     if (request.method === "OPTIONS") {
       assertOrigin(request);
-      return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": url.origin, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Vary": "Origin", "Cache-Control": "no-store" } });
+      return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": url.origin, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Vary": "Origin", "Cache-Control": "no-store" } });
     }
     if (["POST", "DELETE", "PUT", "PATCH"].includes(request.method)) assertOrigin(request);
     const sectionResponse = await handleProjectSection(request, env, path);
@@ -740,7 +810,7 @@ export async function handleApi(request, env) {
     }
     throw new ApiError(404, "API route not found");
   } catch (error) {
-    if (error instanceof ApiError) return json({ error: error.message }, error.status, error.headers);
+    if (error instanceof ApiError || error instanceof AppAuthError) return json({ error: error.message }, error.status, error.headers);
     // Do not return SQL, credentials, provider errors, or stack traces to clients.
     console.error("Grupedia API request failed", { errorType: error?.name || "Error" });
     return json({ error: "Something went wrong. Please try again" }, 500);

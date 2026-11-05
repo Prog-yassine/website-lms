@@ -8,7 +8,7 @@ const frontend = resolve(root, 'build');
 const output = resolve(root, 'dist');
 const manifest = JSON.parse(await readFile(resolve(frontend, 'asset-manifest.json'), 'utf8'));
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.woff2': 'font/woff2' };
-const files = new Set(['index.html', 'logo.svg', 'touch-icon.png', 'manifest.json', 'favicon.ico', 'logo192.png', 'logo512.png', 'robots.txt']);
+const files = new Set(['index.html', 'app-auth-demo.html', 'logo.svg', 'touch-icon.png', 'manifest.json', 'favicon.ico', 'logo192.png', 'logo512.png', 'robots.txt']);
 for (const path of Object.values(manifest.files)) if (!path.endsWith('.map')) files.add(path.replace(/^\//, ''));
 // Include any build assets emitted by CSS imports, without source maps.
 async function collect(directory) {

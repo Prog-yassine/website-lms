@@ -98,3 +98,39 @@ CREATE TABLE IF NOT EXISTS storage_objects (
 );
 CREATE INDEX IF NOT EXISTS storage_objects_project_bucket ON storage_objects(project_id, bucket_id);
 CREATE INDEX IF NOT EXISTS storage_objects_project_state ON storage_objects(project_id, state);
+
+-- End-user identities belong to one application project. They are separate from
+-- the users/sessions tables used to sign in to the Grupedia dashboard.
+CREATE TABLE IF NOT EXISTS app_auth_users (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL COLLATE NOCASE,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  last_sign_in_at TEXT,
+  UNIQUE (project_id, email),
+  UNIQUE (project_id, id)
+);
+CREATE INDEX IF NOT EXISTS app_auth_users_project_id ON app_auth_users(project_id);
+
+CREATE TABLE IF NOT EXISTS app_auth_sessions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  refresh_hash TEXT NOT NULL UNIQUE,
+  expires_at INTEGER NOT NULL,
+  revoked_at INTEGER,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (project_id, user_id) REFERENCES app_auth_users(project_id, id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS app_auth_sessions_project_user ON app_auth_sessions(project_id, user_id);
+CREATE INDEX IF NOT EXISTS app_auth_sessions_expires_at ON app_auth_sessions(expires_at);
+
+CREATE TABLE IF NOT EXISTS app_auth_settings (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  allowed_origins TEXT NOT NULL DEFAULT '[]',
+  signup_enabled INTEGER NOT NULL DEFAULT 1 CHECK (signup_enabled IN (0, 1)),
+  updated_at TEXT NOT NULL
+);

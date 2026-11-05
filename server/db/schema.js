@@ -118,3 +118,45 @@ export const storageObjects = sqliteTable("storage_objects", {
   check("storage_objects_size_check", sql`${table.size} > 0 AND ${table.size} <= 5242880`),
   check("storage_objects_state_check", sql`${table.state} IN ('uploading', 'ready')`),
 ]);
+
+// Application end-user auth is independent from Grupedia builder auth above.
+export const appAuthUsers = sqliteTable("app_auth_users", {
+  id: text("id"),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull().default(""),
+  email: caseInsensitiveText("email").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: text("created_at").notNull(),
+  lastSignInAt: text("last_sign_in_at"),
+}, (table) => [
+  primaryKey({ columns: [table.id] }),
+  unique("app_auth_users_project_email_unique").on(table.projectId, table.email),
+  unique("app_auth_users_project_id_unique").on(table.projectId, table.id),
+  index("app_auth_users_project_id").on(table.projectId),
+]);
+
+export const appAuthSessions = sqliteTable("app_auth_sessions", {
+  id: text("id"),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
+  refreshHash: text("refresh_hash").notNull().unique(),
+  expiresAt: integer("expires_at").notNull(),
+  revokedAt: integer("revoked_at"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.id] }),
+  foreignKey({ columns: [table.projectId, table.userId], foreignColumns: [appAuthUsers.projectId, appAuthUsers.id] }).onDelete("cascade"),
+  index("app_auth_sessions_project_user").on(table.projectId, table.userId),
+  index("app_auth_sessions_expires_at").on(table.expiresAt),
+]);
+
+export const appAuthSettings = sqliteTable("app_auth_settings", {
+  projectId: text("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  allowedOrigins: text("allowed_origins").notNull().default("[]"),
+  signupEnabled: integer("signup_enabled").notNull().default(1),
+  updatedAt: text("updated_at").notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.projectId] }),
+  check("app_auth_settings_signup_enabled_check", sql`${table.signupEnabled} IN (0, 1)`),
+]);

@@ -1,19 +1,19 @@
 # API REST de Grupedia
 
-Cette API implémente l’inscription, la connexion, les sessions la consultation d’un projet de test par utilisateur et la gestion de fichiers privés. Elle utilise une base SQLite locale en développement et un binding Cloudflare D1 `DB` en hébergement, ainsi qu’un binding R2 `BUCKET` pour les contenus des fichiers. Aucune infrastructure AWS, base PostgreSQL distante ou fonctionnalité de facturation n’est provisionnée par ces routes.
+Cette API implémente les comptes développeurs Grupedia, l’authentification des utilisateurs de leurs applications, la consultation de données de test et la gestion de fichiers privés. Les deux types de comptes et de sessions sont distincts. Elle utilise une base SQLite locale en développement et un binding Cloudflare D1 `DB` en hébergement, ainsi qu’un binding R2 `BUCKET` pour les contenus des fichiers. Aucune infrastructure AWS, base PostgreSQL distante ou fonctionnalité de facturation n’est provisionnée par ces routes.
 
 Le point d’entrée est `handleApi(request, env)` dans `server/worker.js`. Le serveur et l’interface utilisent la même origine : `http://127.0.0.1:8787` en développement complet, ou l’URL du site hébergé.
 
 ## Requêtes et réponses
 
 - Les réponses API sont JSON, sauf les téléchargements binaires, et comportent `Cache-Control: no-store` et `X-Content-Type-Options: nosniff`.
-- Les corps des requêtes d’authentification sont des objets JSON, avec `Content-Type: application/json`, limités à **16 KiB**. `refresh` et `logout` acceptent un corps vide.
-- Les routes protégées attendent `Authorization: Bearer <access-token>` ; le cookie seul ne donne pas directement accès aux données.
+- Les corps des requêtes d’authentification sont des objets JSON, avec `Content-Type: application/json`, limités à **16 KiB**. Pour les comptes développeurs, `refresh` et `logout` acceptent un corps vide. Pour les applications, le renouvellement transmet un `refresh_token` en JSON.
+- Les routes protégées du tableau de bord attendent `Authorization: Bearer <developer-access-token>` ; le cookie seul ne donne pas directement accès aux données. Le JWT d’un utilisateur d’application n’est pas accepté par ces routes.
 - Les erreurs suivent `{ "error": "message" }` et ne renvoient ni requêtes SQL, ni traces internes, ni secrets.
-- Les requêtes POST et DELETE qui contiennent un en-tête `Origin` doivent correspondre exactement à l’origine de l’URL demandée. Les clients REST sans cet en-tête sont acceptés. Les requêtes cross-origin du navigateur ne sont pas prises en charge.
-- `OPTIONS /api/*` renvoie `204` pour la même origine. Il n’ouvre pas une politique CORS publique.
+- Les mutations privées du tableau de bord qui contiennent un en-tête `Origin` doivent correspondre exactement à l’origine de l’URL demandée. Les clients REST sans cet en-tête sont acceptés.
+- Les routes publiques `/api/apps/:projectId/auth/*` appliquent une politique CORS propre au projet : origine exacte autorisée, origine du service ou appel serveur sans `Origin`. Leurs prérequêtes `OPTIONS` suivent cette même politique. Aucun joker CORS ni cookie développeur n’est utilisé.
 
-## Authentification
+## Authentification des développeurs Grupedia
 
 | Méthode et route | Corps / justificatif | Résultat |
 |---|---|---|
@@ -101,7 +101,7 @@ Toutes ces routes sont en lecture seule et exigent un JWT Bearer.
 
 `:projectId` doit identifier un projet appartenant au compte connecté. Un projet absent, invalide ou appartenant à un autre utilisateur renvoie `404`. L’API n’expose pas l’existence du projet d’un autre compte.
 
-Sans paramètre `schema`, l’API utilise `main` : seules les tables **`products`**, **`customers`** et **`orders`** sont autorisées. Avec `schema=auth`, elle propose les projections sûres **`users`** et **`sessions`** du propriétaire connecté. Tout autre espace de noms est refusé. `main.users`, `auth.products` et `rate_limits` ne sont pas exposés. Les noms de table et de colonne proviennent d’une liste fixe ; les valeurs des requêtes sont liées comme paramètres SQL.
+Sans paramètre `schema`, l’API utilise `main` : seules les tables **`products`**, **`customers`** et **`orders`** sont autorisées. Avec `schema=auth`, elle propose les projections sûres **`users`** et **`sessions`** de l’application du projet. Tout autre espace de noms est refusé. `main.users`, `auth.products` et `rate_limits` ne sont pas exposés. Les noms de table et de colonne proviennent d’une liste fixe ; les valeurs des requêtes sont liées comme paramètres SQL.
 
 Le paramètre `schema=auth` fonctionne sur la liste des tables comme sur la lecture des lignes :
 
@@ -111,9 +111,9 @@ GET /api/projects/<project-id>/tables/users/rows?schema=auth&page=1&pageSize=25
 Authorization: Bearer <access-token>
 ```
 
-Dans SQLite/D1, `auth` est un espace de noms logique de l’API et de l’interface, pas un schéma PostgreSQL physique. La vue `auth.users` ne contient que le propriétaire du projet. La vue `auth.sessions` contient son historique de sessions, avec les dates d’expiration/révocation, mais aucun hachage de mot de passe ni de token. Les contrôles de propriété du projet et de l’utilisateur s’appliquent aussi à ces vues. La section Authentication garde une vue des seules sessions actives, distincte de cet historique. La future migration AWS pourra créer le schéma PostgreSQL `auth` réel.
+Dans SQLite/D1, `auth` est un espace de noms logique de l’API et de l’interface, pas un schéma PostgreSQL physique. La vue `auth.users` contient les utilisateurs de l’application du projet et commence vide. Le compte développeur n’y est jamais copié automatiquement. La vue `auth.sessions` contient l’historique des sessions de ces utilisateurs, avec les dates d’expiration/révocation, mais aucun hachage de mot de passe ni jeton. La section Authentication conserve une vue des seules sessions d’application actives, distincte de cet historique. La future migration AWS pourra créer le schéma PostgreSQL `auth` réel.
 
-La base physique est partagée. Pour `main`, le filtrage `project_id` et la vérification du propriétaire sont appliqués côté serveur. Pour `auth`, les projections filtrent l’identifiant du propriétaire connecté après vérification du projet. `project_id` est une colonne interne : elle n’est renvoyée ni dans les lignes ni dans les métadonnées des colonnes visibles.
+La base physique est partagée. La vérification du propriétaire et le filtrage par `project_id` sont appliqués côté serveur dans les deux espaces de noms. Les utilisateurs d’application et leurs sessions utilisent des tables distinctes des comptes développeurs : `app_auth_users`, `app_auth_sessions` et `app_auth_settings`. `project_id` reste une colonne interne des projections : elle n’est renvoyée ni dans les lignes ni dans les métadonnées des colonnes visibles.
 
 ### Lecture des lignes
 
@@ -156,16 +156,115 @@ Réponse illustrative, abrégée :
 
 ## Interface Authentication
 
-`GET /api/projects/:projectId/auth` exige un JWT et vérifie d’abord que le projet appartient au compte connecté. La réponse contient :
+Ces routes d’administration exigent le JWT du développeur et vérifient que le projet lui appartient. Elles gèrent les comptes des utilisateurs de son application ; elles ne modifient ni sa connexion Grupedia ni son stockage privé.
 
-- `users` : le profil public du propriétaire, avec `role: "owner"`, `provider: "email"` et `lastSignInAt` ; aucun autre compte Grupedia.
-- `sessions` : les sessions actives de ce propriétaire, avec `id`, `createdAt`, `lastUsedAt`, `expiresAt` et `current`.
+| Méthode et route | Corps / résultat |
+|---|---|
+| `GET /api/projects/:projectId/auth` | Annuaire, sessions actives, fournisseurs, réglages et paramètres d’intégration |
+| `POST /api/projects/:projectId/auth/users` | JSON `{ email, password, name? }` → `201`, crée un utilisateur de l’application |
+| `PUT /api/projects/:projectId/auth/settings` | JSON `{ allowedOrigins, signupEnabled }` → réglages enregistrés |
+| `DELETE /api/projects/:projectId/auth/sessions/:sessionId` | Révoque une session d’application du projet |
+
+La réponse de consultation contient :
+
+- `users` : les profils publics des utilisateurs de l’application, avec le fournisseur et la dernière connexion.
+- `sessions` : les sessions actives de ces utilisateurs, avec leur identité et leurs dates ; aucune session développeur.
 - `providers` : e-mail/mot de passe activé ; Google et GitHub non connectés.
-- `settings` : `accessTokenSeconds`, `refreshTokenSeconds` et `passwordMinLength`, en lecture seule.
+- `settings` : politique de session, longueur minimale du mot de passe, `allowedOrigins` et `signupEnabled`.
+- `integration` : identifiant public du projet et URL de son API d’authentification.
 
-Les hachages de mots de passe et de renouvellement ne sont jamais exposés. Cette section concerne actuellement le propriétaire du projet, pas un nouveau système d’utilisateurs finaux pour ses applications.
+Les hachages de mots de passe et de renouvellement ne sont jamais exposés. Un nouveau projet a un annuaire vide. La création manuelle ou l’inscription par l’API d’application remplit cet annuaire. Une adresse e-mail est unique dans un projet, sans distinction de casse ; la même adresse peut être utilisée dans un autre projet ou pour un compte développeur, sans partager les comptes.
 
-`DELETE /api/projects/:projectId/auth/sessions/:sessionId` révoque une autre session active du même propriétaire. La session courante renvoie `409` : utiliser `POST /api/auth/logout` pour fermer la session du navigateur et effacer son cookie. Une session étrangère ou introuvable n’est pas révélée.
+Toutes les sessions affichées sont révocables : il n’existe pas de session développeur « courante » dans cette liste. La révocation invalide l’accès et le renouvellement de la session d’application concernée ; le développeur reste connecté à Grupedia. Une session d’un autre projet ou introuvable n’est pas révélée.
+
+### Origines et inscriptions
+
+`allowedOrigins` est une liste de dix origines au maximum. Chaque entrée est une origine exacte, sans chemin, joker, identifiant ou mot de passe : HTTPS pour un site public, ou HTTP sur une adresse locale de développement. L’origine du service est toujours acceptée ; les appels serveur sans `Origin` le sont également. Une origine non autorisée, y compris `Origin: null`, reçoit `403`. Une prérequête acceptée renvoie `204`, autorise `GET`, `POST`, `OPTIONS` et les en-têtes `Content-Type` et `Authorization`, sans `Access-Control-Allow-Credentials`. Le navigateur client utilise `credentials: 'omit'` et ses jetons d’application, jamais le cookie ou le JWT développeur.
+
+`signupEnabled: false` ferme l’inscription publique de l’application. Les utilisateurs existants peuvent toujours se connecter et le développeur peut créer un utilisateur manuellement depuis le tableau de bord. Ces réglages n’affectent pas l’inscription des développeurs sur Grupedia.
+
+## Authentification des utilisateurs d’application
+
+L’URL de base est `/api/apps/:projectId/auth`. `projectId` est l’identifiant public du projet, pas un secret ni une clé administrateur. Ces routes ne demandent aucun identifiant développeur. Elles ne donnent accès ni au tableau de bord, ni aux tables, ni au stockage privé.
+
+| Méthode et route relative | Corps / justificatif | Résultat |
+|---|---|---|
+| `POST /register` | JSON `{ email, password, name? }` | `201`, `{ user }` ; ne connecte pas automatiquement |
+| `POST /login` | JSON `{ email, password }` | Jetons d’application et profil |
+| `POST /refresh` | JSON `{ refresh_token }` | Nouveaux jetons et profil ; l’ancien renouvellement devient invalide |
+| `GET /me` | `Authorization: Bearer <app-access-token>` | `{ user }` |
+| `POST /logout` | JSON `{ refresh_token }` recommandé, ou JWT d’application Bearer | Révoque la session d’application |
+
+Le mot de passe comporte au moins huit caractères et au maximum 72 octets UTF-8 ; il est haché côté serveur et n’est jamais renvoyé. L’e-mail est normalisé et limité à 254 caractères. Le champ `name` est facultatif, nettoyé et limité à 80 caractères sans caractères de contrôle. Les profils et les sessions restent isolés par projet. Le prototype limite chaque projet à 1 000 utilisateurs d’application et chaque utilisateur à vingt sessions.
+
+Les réponses de `login` et `refresh` utilisent ce format :
+
+```json
+{
+  "access_token": "<app-access-token>",
+  "refresh_token": "<opaque-app-refresh-token>",
+  "expires_in": 900,
+  "token_type": "bearer",
+  "user": {
+    "id": "<app-user-id>",
+    "email": "customer@example.test",
+    "name": "Customer"
+  }
+}
+```
+
+Le JWT d’application comporte un émetteur et une audience distincts des JWT développeurs et expire au bout de quinze minutes. Le jeton opaque de renouvellement tourne à chaque utilisation et dure au maximum sept jours à partir de la connexion. Seul son hachage est stocké côté serveur. Aucun cookie n’est créé par ces routes. L’application choisit sa propre gestion des jetons ; les exemples ci-dessous les conservent en mémoire, ce qui demande une nouvelle connexion après un rechargement.
+
+Exemple pour une application dont l’origine a été autorisée dans les réglages du projet :
+
+```js
+const authUrl = 'https://<grupedia-host>/api/apps/<project-id>/auth';
+let appSession;
+
+async function signIn(email, password) {
+  const response = await fetch(`${authUrl}/login`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (!response.ok) throw new Error('Connexion refusée');
+  appSession = await response.json();
+  return appSession.user;
+}
+
+async function getAppUser() {
+  const response = await fetch(`${authUrl}/me`, {
+    credentials: 'omit',
+    headers: { Authorization: `Bearer ${appSession.access_token}` }
+  });
+  if (!response.ok) throw new Error('Session expirée ou révoquée');
+  return (await response.json()).user;
+}
+
+async function refreshAppSession() {
+  const response = await fetch(`${authUrl}/refresh`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: appSession.refresh_token })
+  });
+  if (!response.ok) throw new Error('Nouvelle connexion nécessaire');
+  appSession = await response.json();
+}
+
+async function signOut() {
+  await fetch(`${authUrl}/logout`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: appSession.refresh_token })
+  });
+  appSession = undefined;
+}
+```
+
+Une révocation depuis Authentication ou une déconnexion d’application rend sa session inutilisable même si son JWT n’a pas encore atteint sa date d’expiration. Les jetons d’application ne sont pas interchangeables avec les jetons développeurs, même si l’adresse e-mail est identique.
 
 ## Stockage privé
 
@@ -214,6 +313,8 @@ Les compteurs sont conservés dans D1/SQLite, par fenêtres fixes d’une minute
 - Connexion : 5 tentatives par IP **et** 5 par e-mail normalisé.
 - Renouvellement : 30 tentatives par IP.
 
+Les routes d’application appliquent également les limites de trois inscriptions, cinq connexions et trente renouvellements par minute, dans un espace de compteurs propre au projet. Les limites par IP et par e-mail s’appliquent indépendamment ; leurs clés utilisent des hachages, pas les adresses en clair. Ces compteurs sont distincts de la connexion des développeurs Grupedia.
+
 Le premier compteur dépassé renvoie `429` et un en-tête `Retry-After` en secondes. En hébergement, l’IP vient de l’en-tête `CF-Connecting-IP` fourni par la plateforme ; le serveur doit rester derrière ce point d’entrée de confiance.
 
 | Statut | Signification |
@@ -222,7 +323,7 @@ Le premier compteur dépassé renvoie `429` et un en-tête `Retry-After` en seco
 | `401` | Identifiants incorrects, JWT absent/invalide/expiré ou session révoquée |
 | `403` | Origine interdite |
 | `404` | Route, projet ou table absent/non accessible |
-| `409` | Ressource existante, session courante protégée ou limite de bucket/fichiers atteinte |
+| `409` | Ressource existante ou limite de bucket/fichiers atteinte |
 | `413` | Corps trop volumineux |
 | `415` | Type de contenu incorrect |
 | `429` | Trop de tentatives ; respecter `Retry-After` |
@@ -248,3 +349,9 @@ npm run test:api
 ```
 
 Les tests d’intégration emploient une nouvelle base SQLite par test avec les mêmes requêtes SQL que le Worker, des transactions réelles, bcrypt et de vrais JWT. Ils ne créent aucune ressource distante et ne font aucun appel à AWS.
+
+## Démo cliente autonome
+
+`/app-auth-demo.html?project=<project-id>` fournit un exemple de formulaire indépendant du tableau de bord : inscription, connexion, vérification, renouvellement et déconnexion. Ses requêtes utilisent `credentials: 'omit'`, et seuls les tokens d’application sont conservés en mémoire. Un rechargement efface cette session de démonstration ; le compte reste enregistré dans le projet. La page ne lit ni ne modifie la session développeur Grupedia.
+
+Le fichier HTML peut être adapté pour une application cliente. Le champ de configuration HTML `grupedia-auth-api-origin` permet d’indiquer l’origine de l’API si la page est hébergée ailleurs ; ajouter cette origine cliente dans Authentication → Providers avant de tester les appels depuis un autre site.

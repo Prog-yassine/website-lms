@@ -108,3 +108,50 @@
 @media (max-width: 1000px) { .authmgr-content-heading { flex-wrap: wrap; } .authmgr-heading-actions { justify-content: flex-start; } }
 @media (max-width: 780px) { .authmgr-panel { padding: 23px 18px; } .authmgr-sidebar-tabs > button { min-height: 44px; } .authmgr-content-heading h2 { font-size: 20px; } .authmgr-content-heading p { font-size: 11px; } .authmgr-user-toolbar input { height: 39px; font-size: 16px; } .authmgr-sidebar-label { margin-top: 3px; } .authmgr-provider-card { padding: 16px 13px; gap: 10px; } .authmgr-provider-card p { font-size: 10px; } .authmgr-settings { padding: 18px; } }
 @media (max-width: 480px) { .authmgr-panel { padding: 21px 15px; } .authmgr-content-heading { align-items: flex-start; } .authmgr-content-heading p { max-width: 185px; font-size: 10px; } .authmgr-content-heading > button { padding: 6px 8px; } .authmgr-scope-note { padding: 11px; gap: 8px; } .authmgr-scope-note p { font-size: 10px; } .authmgr-provider-card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; } .authmgr-provider-card > .db-button, .authmgr-provider-enabled { grid-column: 2; margin-left: 0; justify-self: start; } .authmgr-provider-icon { width: 32px; height: 32px; flex-basis: 32px; } .authmgr-settings dl { grid-template-columns: 1fr; gap: 14px; } .authmgr-settings dl > div { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 0 0 14px; border-right: 0; border-bottom: 1px solid #343d43; } .authmgr-settings dl > div:last-child { border-bottom: 0; padding-bottom: 0; } .authmgr-settings dd { margin-top: 0; font-size: 12px; white-space: nowrap; } .authmgr-settings dt { font-size: 10px; } .authmgr-dialog { padding: 21px; } .authmgr-user-details > div { grid-template-columns: 72px minmax(0, 1fr); gap: 12px; } }
+
+/* Application-user registration, browser integration, and project policies. */
+.authmgr-heading-actions { max-width: 100%; }
+.authmgr-list-limit { color: #9aab9e; font-size: 10px; line-height: 1.8; margin: 0 0 13px; }
+.authmgr-user-id { display: block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px !important; }
+.authmgr-session-id { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; font-size: 9px; color: #8099a8; }
+.authmgr-form { display: flex; flex-direction: column; gap: 19px; }
+.authmgr-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.authmgr-field > label { color: #bdcfd9; font-size: 11px; font-weight: 500; }
+.authmgr-field input, .authmgr-field textarea { display: block; width: 100%; min-width: 0; min-height: 39px; padding: 10px 11px; border: 1px solid #3a4b54; border-radius: 6px; background: #192329; color: #cbdce6; font: inherit; font-size: 11px; line-height: 1.8; }
+.authmgr-field input::placeholder, .authmgr-field textarea::placeholder { color: #6f8795; }
+.authmgr-field textarea { resize: vertical; min-height: 101px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-field input[readonly] { color: #9abca7; background: #1c2923; border-color: #3d5144; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-field input:focus, .authmgr-field textarea:focus { outline: 0; border-color: #75b28f; box-shadow: 0 0 0 2px #64af821c; }
+.authmgr-field > small { color: #8299a8; font-size: 10px; line-height: 1.8; }
+.authmgr-password-field { position: relative; }
+.authmgr-password-field input { padding-right: 42px; }
+.authmgr-password-field button { position: absolute; right: 5px; top: 5px; height: 30px; width: 30px; }
+.authmgr-form > .authmgr-dialog-actions { margin-top: 4px; }
+.authmgr-checkbox { display: flex; align-items: flex-start; gap: 9px; color: #bbd1dd; }
+.authmgr-checkbox > input { flex: 0 0 15px; width: 15px; height: 15px; margin: 2px 0 0; accent-color: #75b68e; }
+.authmgr-checkbox > span { display: flex; flex-direction: column; gap: 6px; }
+.authmgr-checkbox strong { font-size: 11px; font-weight: 500; }
+.authmgr-checkbox small { color: #8299a8; font-size: 10px; line-height: 1.8; }
+.authmgr-settings-actions { display: flex; justify-content: flex-end; }
+.authmgr-policy-settings { margin-top: 26px; padding-top: 24px; border-top: 1px solid #34424a; }
+.authmgr-policy-settings > p { color: #80929e; font-size: 10px; margin: 0 0 21px; }
+.authmgr-integration { min-width: 0; }
+.authmgr-integration-intro { margin-bottom: 23px; }
+.authmgr-integration h3 { color: #c6d7e2; font-size: 13px; font-weight: 500; margin: 0 0 10px; }
+.authmgr-integration p { color: #8da3b2; font-size: 11px; line-height: 1.9; margin: 0; max-width: 750px; }
+.authmgr-integration-identifiers { display: grid; grid-template-columns: minmax(140px, .8fr) minmax(0, 1.6fr); gap: 19px; padding: 20px; margin-bottom: 28px; border: 1px solid #35464f; border-radius: 8px; background: #1d282d; }
+.authmgr-integration-step { display: flex; align-items: flex-start; gap: 13px; margin: 22px 0; }
+.authmgr-integration-step > span { display: grid; place-items: center; flex: 0 0 24px; height: 24px; border: 1px solid #3e5a49; border-radius: 50%; background: #273c2f; color: #a3cdb1; font-size: 10px; }
+.authmgr-integration-step > div { min-width: 0; }
+.authmgr-integration-step h3 { margin-top: 4px; font-size: 12px; }
+.authmgr-integration-step p { font-size: 10px; }
+.authmgr-integration-step p > code { color: #a4c7b1; font-size: 10px; }
+.authmgr-integration-step .db-button { margin-top: 13px; }
+.authmgr-code-example { position: relative; width: 100%; min-width: 0; border: 1px solid #354851; border-radius: 8px; overflow: hidden; background: #152027; }
+.authmgr-code-example > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #34454e; background: #202c32; }
+.authmgr-code-example > div > span { color: #8dabb8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.authmgr-code-example pre { overflow-x: auto; max-height: 500px; max-width: 100%; padding: 20px; margin: 0; color: #a6cbb7; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; line-height: 1.9; scrollbar-width: thin; }
+.authmgr-code-example > p { padding: 10px 15px; border-top: 1px solid #34454e; color: #a6cbb7; font-size: 10px; }
+@media (max-width: 1000px) { .authmgr-integration-identifiers { grid-template-columns: 1fr; } }
+@media (max-width: 780px) { .authmgr-field input:not([readonly]), .authmgr-field textarea { font-size: 16px; } .authmgr-field input[readonly] { font-size: 12px; } .authmgr-code-example pre { font-size: 11px; } .authmgr-checkbox > input { width: 17px; height: 17px; flex-basis: 17px; } }
+@media (max-width: 480px) { .authmgr-integration-identifiers { padding: 16px; gap: 18px; } .authmgr-code-example > div { padding-inline: 11px; } .authmgr-code-example pre { padding: 15px; } .authmgr-integration-step { gap: 10px; } .authmgr-integration-step .db-button { max-width: 100%; white-space: normal; text-align: left; } .authmgr-policy-settings dt { font-size: 9px !important; } }

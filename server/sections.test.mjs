@@ -79,6 +79,15 @@ function fixture(t) {
     return { user: result.data.user, ...credentials, project: projects.data.projects[0] };
   }
 
+  async function appUser(owner, email = 'member@example.com') {
+    const base = `/api/apps/${owner.project.id}/auth`;
+    const registered = await request(`${base}/register`, { json: { name: 'App Member', email, password: PASSWORD } });
+    assert.equal(registered.status, 201);
+    const signedIn = await request(`${base}/login`, { json: { email, password: PASSWORD } });
+    assert.equal(signedIn.status, 200);
+    return { user: registered.data.user, ...signedIn.data, base };
+  }
+
   async function createBucket(owner, name = 'documents') {
     const result = await request(`/api/projects/${owner.project.id}/storage/buckets`, {
       token: owner.token, json: { name }, origin: ORIGIN,
@@ -93,61 +102,79 @@ function fixture(t) {
     });
   }
 
-  return { env, bucket, request, login, account, createBucket, upload };
+  return { env, bucket, request, login, account, appUser, createBucket, upload };
 }
 
-test('authentication overview exposes only the owner and safe active session information', async t => {
-  const { request, account, login } = fixture(t);
+test('authentication overview starts empty and exposes only project app users and safe app sessions', async t => {
+  const { request, account, appUser } = fixture(t);
   const alice = await account('alice@example.com');
-  const secondSession = await login(alice.user.email);
-  const bob = await account('bob@example.com');
   const path = `/api/projects/${alice.project.id}/auth`;
+  const empty = await request(path, { token: alice.token });
+  assert.equal(empty.status, 200);
+  assert.deepEqual(empty.data.users, []);
+  assert.deepEqual(empty.data.sessions, []);
+  const member = await appUser(alice);
+  const secondSession = await request(`${member.base}/login`, { json: { email: member.user.email, password: PASSWORD } });
+  assert.equal(secondSession.status, 200);
+  const bob = await account('bob@example.com');
+  const foreignMember = await appUser(bob, 'foreign@example.com');
   const result = await request(path, { token: alice.token });
   assert.equal(result.status, 200);
   assert.equal(result.data.users.length, 1);
   assert.deepEqual(result.data.users[0], {
-    ...alice.user, role: 'owner', provider: 'email', lastSignInAt: result.data.users[0].lastSignInAt,
+    ...member.user, role: 'authenticated', provider: 'email', lastSignInAt: result.data.users[0].lastSignInAt,
   });
   assert.ok(Number.isFinite(Date.parse(result.data.users[0].lastSignInAt)));
   assert.equal(result.data.sessions.length, 2);
-  assert.equal(result.data.sessions.find(session => session.id === sessionId(alice.token)).current, true);
-  assert.equal(result.data.sessions.find(session => session.id === sessionId(secondSession.token)).current, false);
+  assert.deepEqual(result.data.sessions.map(session => session.id).sort(), [sessionId(member.access_token), sessionId(secondSession.data.access_token)].sort());
   for (const session of result.data.sessions) {
-    assert.deepEqual(Object.keys(session).sort(), ['createdAt', 'current', 'expiresAt', 'id', 'lastUsedAt']);
+    assert.deepEqual(Object.keys(session).sort(), ['createdAt', 'email', 'expiresAt', 'id', 'lastUsedAt', 'userId']);
+    assert.equal(session.userId, member.user.id);
+    assert.equal(session.email, member.user.email);
     assert.ok(Number.isFinite(Date.parse(session.expiresAt)));
   }
   assert.deepEqual(result.data.providers.map(({ id, enabled }) => ({ id, enabled })), [
     { id: 'email', enabled: true }, { id: 'google', enabled: false }, { id: 'github', enabled: false },
   ]);
-  assert.deepEqual(result.data.settings, { accessTokenSeconds: 900, refreshTokenSeconds: 604800, passwordMinLength: 8 });
+  assert.deepEqual(result.data.settings, { accessTokenSeconds: 900, refreshTokenSeconds: 604800, passwordMinLength: 8, signupEnabled: true, allowedOrigins: [] });
+  assert.deepEqual(result.data.integration, { projectId: alice.project.id, authUrl: `${ORIGIN}${member.base}`, basePath: member.base });
+  assert.deepEqual(result.data.totals, { users: 1, activeSessions: 2 });
+  assert.equal(JSON.stringify(result.data).includes(alice.user.id), false);
   assert.equal(JSON.stringify(result.data).includes(bob.user.id), false);
+  assert.equal(JSON.stringify(result.data).includes(foreignMember.user.id), false);
   assert.equal(JSON.stringify(result.data).includes('hash'), false);
   assert.equal((await request(path, { token: bob.token })).status, 404);
 });
 
-test('revoking another own session invalidates its bearer and refresh credentials without ending the current session', async t => {
-  const { request, account, login } = fixture(t);
+test('an owner revokes only project app sessions while builder sessions remain valid', async t => {
+  const { request, account, appUser } = fixture(t);
   const alice = await account('alice@example.com');
-  const secondSession = await login(alice.user.email);
+  const member = await appUser(alice);
+  const secondSession = await request(`${member.base}/login`, { json: { email: member.user.email, password: PASSWORD } });
+  assert.equal(secondSession.status, 200);
   const bob = await account('bob@example.com');
+  const foreignMember = await appUser(bob);
   const base = `/api/projects/${alice.project.id}/auth/sessions`;
   const remove = id => request(`${base}/${id}`, { token: alice.token, method: 'DELETE', origin: ORIGIN });
-  assert.equal((await remove(sessionId(alice.token))).status, 409);
+  assert.equal((await remove(sessionId(alice.token))).status, 404);
   assert.equal((await remove(sessionId(bob.token))).status, 404);
+  assert.equal((await remove(sessionId(foreignMember.access_token))).status, 404);
   assert.equal((await remove(MISSING_ID)).status, 404);
-  assert.equal((await remove(sessionId(secondSession.token))).status, 200);
-  assert.equal((await request('/api/auth/me', { token: secondSession.token })).status, 401);
-  assert.equal((await request('/api/auth/refresh', { method: 'POST', cookie: secondSession.cookie })).status, 401);
+  assert.equal((await request(`${base}/${sessionId(member.access_token)}`, { token: bob.token, method: 'DELETE' })).status, 404);
+  assert.equal((await remove(sessionId(member.access_token))).status, 200);
+  assert.equal((await request(`${member.base}/me`, { token: member.access_token })).status, 401);
+  assert.equal((await request(`${member.base}/refresh`, { json: { refresh_token: member.refresh_token } })).status, 401);
+  assert.equal((await request(`${member.base}/me`, { token: secondSession.data.access_token })).status, 200);
   assert.equal((await request('/api/auth/me', { token: alice.token })).status, 200);
   assert.equal((await request('/api/auth/me', { token: bob.token })).status, 200);
   const overview = await request(`/api/projects/${alice.project.id}/auth`, { token: alice.token });
-  assert.deepEqual(overview.data.sessions.map(session => session.id), [sessionId(alice.token)]);
+  assert.deepEqual(overview.data.sessions.map(session => session.id), [sessionId(secondSession.data.access_token)]);
 });
 
 test('auth and storage routes require authentication and reject cross-origin mutations', async t => {
-  const { request, account, login, createBucket } = fixture(t);
+  const { request, account, appUser, createBucket } = fixture(t);
   const alice = await account();
-  const otherSession = await login(alice.user.email);
+  const member = await appUser(alice);
   const container = await createBucket(alice);
   const base = `/api/projects/${alice.project.id}`;
   for (const path of [`${base}/auth`, `${base}/storage/buckets`, `${container.path}/objects`, `${container.path}/objects/${MISSING_ID}/content`]) {
@@ -158,8 +185,10 @@ test('auth and storage routes require authentication and reject cross-origin mut
   const alienOrigin = 'https://untrusted.example';
   assert.equal((await request(`${base}/storage/buckets`, { token: alice.token, json: { name: 'blocked' }, origin: alienOrigin })).status, 403);
   assert.equal((await request(container.path, { token: alice.token, method: 'DELETE', origin: alienOrigin })).status, 403);
-  assert.equal((await request(`${base}/auth/sessions/${sessionId(otherSession.token)}`, { token: alice.token, method: 'DELETE', origin: alienOrigin })).status, 403);
-  assert.equal((await request('/api/auth/me', { token: otherSession.token })).status, 200);
+  assert.equal((await request(`${base}/auth/sessions/${sessionId(member.access_token)}`, { token: alice.token, method: 'DELETE', origin: alienOrigin })).status, 403);
+  assert.equal((await request(`${base}/auth/users`, { token: alice.token, json: { email: 'blocked@example.com', password: PASSWORD }, origin: alienOrigin })).status, 403);
+  assert.equal((await request(`${base}/auth/settings`, { token: alice.token, method: 'PUT', json: { signupEnabled: false, allowedOrigins: [] }, origin: alienOrigin })).status, 403);
+  assert.equal((await request(`${member.base}/me`, { token: member.access_token })).status, 200);
 });
 
 test('missing R2 binding reports unavailable storage while preserving readable owned metadata', async t => {
