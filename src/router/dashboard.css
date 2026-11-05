@@ -29,6 +29,8 @@
 .db-rail-tools { display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center; }
 .db-rail-button { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 7px; background: transparent; color: #999da4; font-size: 19px; }
 .db-rail-button.is-active { background: #27392f; color: var(--db-green); }
+.db-shell .db-rail-button { color: #999da4; }
+.db-shell .db-rail-button.is-active { color: var(--db-green); }
 .db-rail-button.is-active::before { position: absolute; left: -11px; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--db-green); content: ''; }
 .db-rail-button:not(:disabled):hover { background: #2b2d30; }
 .db-rail-help { margin-top: auto; margin-bottom: 12px; }
@@ -58,6 +60,7 @@
 .db-schema-select > svg { flex-shrink: 0; width: 13px; height: 13px; }
 .db-schema-select > svg:last-child { position: absolute; right: 10px; pointer-events: none; width: 12px; }
 .db-schema-select select { flex: 1; width: 100%; height: 100%; padding: 0 26px 0 0; appearance: none; border: 0; background: none; color: #d2d5d9; cursor: pointer; font-size: 11px; }
+.db-logical-schema-note { margin: 9px 19px 0; color: #8c9caa; font-size: 9px; line-height: 1.7; }
 .db-sidebar-divider { margin: 20px 0 19px; border-bottom: 1px solid var(--db-line); }
 .db-tables-label { display: flex; justify-content: space-between; align-items: center; margin: 0 20px 13px; }
 .db-tables-label h2 { margin: 0; color: #aeb3bb; font-size: 11px; font-weight: 550; }
@@ -93,6 +96,7 @@
 .db-table-schema { margin-right: 14px; padding: 2px 5px; border-radius: 4px; background: #2d3032; color: #8e98a0; font-size: 8px; }
 .db-heading-labels { display: flex; gap: 13px; align-items: center; }
 .db-sample-badge { padding: 3px 6px; border: 1px solid #444031; border-radius: 4px; background: #312f24; color: #d0bf83; font-size: 9px; white-space: nowrap; }
+.db-logical-schema-badge { padding: 3px 6px; border: 1px solid #3a4b57; border-radius: 4px; background: #26343f; color: #abc7dc; font-size: 9px; white-space: nowrap; }
 .db-readonly { display: flex; align-items: center; gap: 5px; color: #8c96a0; font-size: 10px; white-space: nowrap; }
 .db-readonly svg { width: 12px; height: 12px; }
 .db-toolbar { display: flex; align-items: center; gap: 9px; min-height: 60px; padding: 12px 18px; border-bottom: 1px solid var(--db-line); background: #1b1d1f; }
@@ -153,6 +157,8 @@
 .db-page-label strong { color: #c7d4de; font-weight: 500; }
 .db-sidebar-backdrop { display: none; }
 .db-signout-error { margin: 0; padding: 9px 18px; border-bottom: 1px solid #654e43; background: #382d28; color: #f0bfaa; font-size: 11px; }
+.db-shell-error { position: fixed; z-index: 90; bottom: 64px; left: 50%; max-width: calc(100% - 32px); margin: 0; padding: 12px 18px; border: 1px solid #7d5d4f; border-radius: 7px; background: #382d28; color: #f0bfaa; font-size: 12px; transform: translateX(-50%); box-shadow: 0 5px 20px #0005; }
+.db-section-navigation { display: none; }
 .db-api-dialog { width: min(580px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid #424a50; border-radius: 12px; background: #202427; color: #d9e0e6; box-shadow: 0 30px 100px #0009; color-scheme: dark; }
 .db-api-dialog::backdrop { background: #0009; backdrop-filter: blur(3px); }
 .db-dialog-body { padding: 28px; }
@@ -192,6 +198,14 @@
   .db-branch { display: none; }
   .db-sidebar { position: fixed; z-index: 31; top: 62px; bottom: 0; left: 0; display: none; width: min(280px, calc(100vw - 50px)); box-shadow: 10px 0 40px #0005; }
   .db-sidebar.is-open { display: flex; }
+  .db-section-navigation { display: block; padding: 19px 15px 16px; border-bottom: 1px solid var(--db-line); }
+  .db-section-navigation-label { display: block; margin: 0 7px 11px; color: #7d8995; font-size: 9px; font-weight: 550; letter-spacing: .08em; text-transform: uppercase; }
+  .db-section-navigation > div { display: flex; flex-direction: column; gap: 4px; }
+  .db-section-link { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 9px 10px; border: 1px solid transparent; border-radius: 6px; color: #a4aeb8; font-size: 12px; }
+  .db-section-link svg { width: 15px; height: 15px; color: #8a97a3; }
+  .db-section-link.is-active { border-color: #334d3e; background: #263a2e; color: #8ee4b5; }
+  .db-section-link.is-active svg { color: #80c99e; }
+  .db-section-link:hover { background: #2b3338; }
   .db-sidebar-backdrop { position: fixed; z-index: 30; inset: 62px 0 0; display: block; border: 0; background: #0008; }
   .db-sidebar-title { padding-block: 23px; }
   .db-table-item { min-height: 44px; }

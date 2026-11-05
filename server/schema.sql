@@ -73,3 +73,28 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   request_count INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (bucket_key, window_start)
 );
+
+CREATE TABLE IF NOT EXISTS storage_buckets (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (project_id, name),
+  UNIQUE (project_id, id)
+);
+CREATE INDEX IF NOT EXISTS storage_buckets_project_id ON storage_buckets(project_id);
+
+CREATE TABLE IF NOT EXISTS storage_objects (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  bucket_id TEXT NOT NULL,
+  object_key TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  size INTEGER NOT NULL CHECK (size > 0 AND size <= 5242880),
+  content_type TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'uploading' CHECK (state IN ('uploading', 'ready')),
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (project_id, bucket_id) REFERENCES storage_buckets(project_id, id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS storage_objects_project_bucket ON storage_objects(project_id, bucket_id);
+CREATE INDEX IF NOT EXISTS storage_objects_project_state ON storage_objects(project_id, state);

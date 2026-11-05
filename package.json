@@ -20,7 +20,7 @@
     "eject": "react-scripts eject",
     "build:site": "npm run build && npm run build --prefix server",
     "dev:fullstack": "node server/dev.mjs",
-    "test:api": "node --test server/worker.test.mjs"
+    "test:api": "node --test server/*.test.mjs"
   },
   "eslintConfig": {
     "extends": [

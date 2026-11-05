@@ -69,14 +69,14 @@ export function isSessionResponse(data) {
   return Boolean(data && typeof data.token === "string" && data.token.trim() && isUserProfile(data.user));
 }
 
-async function requestJson(path, { method = "GET", body, signal, headers = {}, ...options } = {}, token = null) {
+async function requestJson(path, { method = "GET", body, signal, headers = {}, rawBody = false, responseType = "json", ...options } = {}, token = null) {
   if (typeof path !== "string" || !/^\/(?!\/)/.test(path)) {
     throw new ApiError("An API path beginning with / is required.");
   }
   if (signal?.aborted) throw aborted();
   const customHeaders = typeof headers.entries === "function" ? Object.fromEntries(headers.entries()) : headers;
-  const requestHeaders = { Accept: "application/json", ...customHeaders };
-  if (body !== undefined) requestHeaders["Content-Type"] = "application/json";
+  const requestHeaders = { Accept: responseType === "blob" ? "application/octet-stream" : "application/json", ...customHeaders };
+  if (body !== undefined && !rawBody) requestHeaders["Content-Type"] = "application/json";
   if (token) requestHeaders.Authorization = `Bearer ${token}`;
   let response;
   try {
@@ -84,7 +84,7 @@ async function requestJson(path, { method = "GET", body, signal, headers = {}, .
       ...options,
       method,
       headers: requestHeaders,
-      body: body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body),
+      body: body === undefined ? undefined : rawBody || typeof body === "string" ? body : JSON.stringify(body),
       credentials: "include",
       signal,
     });
@@ -93,11 +93,22 @@ async function requestJson(path, { method = "GET", body, signal, headers = {}, .
     throw new ApiError("We couldn't reach the server. Check your connection and try again.");
   }
   if (signal?.aborted) throw aborted();
+  if (response.ok && responseType === "blob") {
+    try {
+      const blob = await response.blob();
+      if (signal?.aborted) throw aborted();
+      return blob;
+    } catch (error) {
+      if (error.name === "AbortError" || signal?.aborted) throw aborted();
+      throw new ApiError("The file could not be downloaded. Please try again.", 502);
+    }
+  }
   let data = null;
   if (response.status !== 204) {
     try {
       data = await response.json();
-    } catch {
+    } catch (error) {
+      if (error.name === "AbortError" || signal?.aborted) throw aborted();
       if (response.ok) throw new ApiError("The server returned an unexpected response. Please try again.", 502);
     }
   }

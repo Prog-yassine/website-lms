@@ -1,0 +1,129 @@
+.storage-sidebar-intro { margin: -11px 20px 18px; color: #8f969e; font-size: 10px; line-height: 1.8; }
+.storage-create-bucket { padding: 0 16px; }
+.storage-create-bucket > .db-button { width: 100%; }
+.storage-sidebar .db-sidebar-divider { margin-block: 20px; }
+.storage-bucket-item { min-height: 40px; }
+.storage-sidebar-usage { padding: 18px 18px 15px; border-top: 1px solid var(--db-line); background: #1b1d1f; }
+.storage-sidebar-usage > div { display: flex; flex-direction: column; gap: 8px; font-size: 10px; color: #949da5; }
+.storage-sidebar-usage strong { color: #c7d0d4; font-size: 11px; font-weight: 500; }
+.storage-sidebar-usage strong > span { color: #818c95; font-weight: 400; }
+.storage-sidebar-usage progress { display: block; width: 100%; height: 4px; margin-top: 12px; border: none; border-radius: 3px; overflow: hidden; background: #343c3e; accent-color: #69c796; }
+.storage-sidebar-usage progress::-webkit-progress-bar { background: #343c3e; border-radius: 3px; }
+.storage-sidebar-usage progress::-webkit-progress-value { background: #69c796; border-radius: 3px; }
+.storage-sidebar-usage progress::-moz-progress-bar { background: #69c796; border-radius: 3px; }
+.storage-sidebar-usage > p { display: flex; align-items: center; gap: 5px; margin: 11px 0 0; color: #84958c; font-size: 9px; }
+.storage-sidebar-usage > p svg { width: 11px; height: 11px; }
+.storage-private-badge { display: flex; align-items: center; gap: 5px; padding: 3px 7px; border: 1px solid #38463e; border-radius: 4px; color: #b2c4b7; font-size: 9px; background: #27342b; }
+.storage-private-badge > svg { width: 11px; height: 11px; }
+.storage-mobile-bucket { display: none; }
+.storage-toolbar { flex-wrap: wrap; gap: 8px; }
+.storage-toolbar .db-row-search { flex: 1; width: auto; min-width: 150px; max-width: 290px; }
+.storage-toolbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.storage-delete-bucket { background: transparent; }
+.storage-toolbar .db-button { min-height: 34px; }
+.storage-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 15px; border-bottom: 1px solid #3b5648; background: #23352b; color: #aed6bd; font-size: 11px; line-height: 1.7; }
+.storage-notice > span { display: flex; align-items: flex-start; gap: 8px; }
+.storage-notice > span > svg { flex-shrink: 0; width: 14px; height: 14px; margin-top: 2px; }
+.storage-notice-error { border-color: #60463c; background: #382b26; color: #edb7a4; }
+.storage-notice .db-icon-button { width: 26px; height: 26px; color: inherit; }
+.storage-quota-note { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 17px; background: #332f22; border-bottom: 1px solid #514a31; color: #d5c393; font-size: 10px; }
+.storage-quota-note > svg { flex-shrink: 0; width: 13px; height: 13px; }
+.storage-files-area { min-height: 100px; }
+.storage-message { min-height: 250px; height: 100%; }
+.storage-message > .db-button { margin-top: 18px; }
+.storage-file-table { width: 100%; border-spacing: 0; text-align: left; font-size: 11px; color: #a4afb8; }
+.storage-file-table thead { position: sticky; top: 0; z-index: 1; }
+.storage-file-table thead th { height: 42px; padding: 10px 15px; border-bottom: 1px solid #394048; color: #aeb9c3; font-size: 10px; font-weight: 500; background: #23272a; white-space: nowrap; }
+.storage-file-table td, .storage-file-table tbody th { height: 58px; padding: 8px 15px; border-bottom: 1px solid #2c3236; background: #1b1e20; font-weight: 400; }
+.storage-file-table tr:hover td, .storage-file-table tr:hover th { background: #23292b; }
+.storage-file-table thead th:first-child { width: 42%; }
+.storage-file-table thead th:last-child { width: 84px; }
+.storage-file-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.storage-file-name > span:last-child { display: block; max-width: 330px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d1d9df; font-size: 11px; }
+.storage-file-icon { display: grid; place-items: center; flex-shrink: 0; width: 29px; height: 32px; border: 1px solid #3b4649; border-radius: 5px; background: #273133; color: #9fb9ae; }
+.storage-file-icon > svg { width: 16px; height: 16px; stroke-width: 1.5; }
+.storage-file-size { white-space: nowrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+.storage-file-type > span { display: block; max-width: 185px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #8999a4; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; }
+.storage-file-date { font-size: 10px; white-space: nowrap; }
+.storage-file-actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.storage-file-actions .db-icon-button { width: 30px; height: 30px; }
+.storage-delete-button:not(:disabled):hover { color: #edb0a5; background: #49332d; }
+.storage-footer { color: #8f9ca6; font-size: 10px; }
+.storage-footer > span:last-child { display: flex; align-items: center; gap: 5px; color: #82948a; }
+.storage-footer svg { width: 11px; height: 11px; }
+.storage-uploads { max-height: 210px; overflow-y: auto; border-bottom: 1px solid #3b464a; background: #202729; }
+.storage-uploads-heading { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 7px 15px; border-bottom: 1px solid #303b3f; background: #222b2d; }
+.storage-uploads-heading > strong { font-size: 10px; font-weight: 500; color: #b7c7ce; }
+.storage-uploads-heading .db-icon-button { width: 24px; height: 24px; }
+.storage-uploads ul { margin: 0; padding: 5px 15px; list-style: none; }
+.storage-uploads li { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; font-size: 10px; color: #9db3a8; }
+.storage-uploads li + li { border-top: 1px solid #2a3639; }
+.storage-uploads li > span { display: flex; padding-top: 2px; }
+.storage-uploads li > span > svg { width: 12px; height: 12px; }
+.storage-uploads li > div { min-width: 0; }
+.storage-uploads li strong { display: block; font-size: 10px; font-weight: 400; color: #c0ccd1; overflow-wrap: anywhere; }
+.storage-uploads li p { max-width: 540px; margin: 3px 0 0; color: #c39a8c; font-size: 10px; line-height: 1.7; }
+.storage-uploads li > small { margin-left: auto; flex-shrink: 0; font-size: 9px; }
+.storage-uploads li.is-error { color: #d8a492; }
+.storage-dialog { width: min(470px, calc(100% - 32px)); }
+.storage-dialog .db-dialog-body { padding: 25px; }
+.storage-dialog h2 { font-size: 19px; }
+.storage-dialog .storage-field-label { display: block; margin: 0 0 8px; color: #d0dae1; font-size: 11px; }
+.storage-dialog .storage-field { display: block; width: 100%; min-height: 40px; padding: 10px 12px; border: 1px solid #46514f; border-radius: 6px; outline-offset: 2px; background: #191f21; color: #e0e8e8; font-size: 12px; }
+.storage-dialog .storage-field:focus { border-color: #72b18d; outline: 1px solid #72b18d; }
+.storage-dialog .storage-field-help { margin: 8px 0 18px; color: #8d9caa; font-size: 10px; }
+.storage-dialog-privacy { display: flex; align-items: center; gap: 11px; margin-bottom: 21px; padding: 13px; border: 1px solid #3a4b40; border-radius: 7px; background: #26322b; color: #a7c8b1; }
+.storage-dialog-privacy > svg { width: 17px; height: 17px; flex-shrink: 0; }
+.storage-dialog-privacy > div { display: flex; flex-direction: column; gap: 5px; }
+.storage-dialog-privacy strong { font-size: 11px; font-weight: 500; }
+.storage-dialog-privacy span { font-size: 10px; line-height: 1.6; color: #93a99a; }
+.storage-dialog .storage-dialog-error { margin: 0 0 18px; padding: 10px 12px; border: 1px solid #67493e; border-radius: 6px; background: #3b2d27; color: #eab09a; font-size: 11px; overflow-wrap: anywhere; }
+.storage-dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+.storage-dialog-actions .db-button { min-height: 36px; padding-inline: 13px; }
+.storage-dialog .storage-delete-name { color: #e0e6eb; font-weight: 500; overflow-wrap: anywhere; }
+.storage-danger { border-color: #a15e4c; background: #6f3a2b; color: #ffe5dd; }
+.storage-danger:not(:disabled):hover { background: #84442f; }
+@media (max-width: 1100px) {
+  .storage-file-type { display: none; }
+  .storage-toolbar .db-row-search { min-width: 120px; max-width: 220px; }
+  .storage-refresh > span { display: none; }
+  .storage-file-name > span:last-child { max-width: 235px; }
+  .storage-file-table td, .storage-file-table th { padding-inline: 12px; }
+}
+@media (max-width: 780px) {
+  .storage-mobile-bucket { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 15px; border-bottom: 1px solid var(--db-line); background: #202427; }
+  .storage-mobile-bucket > label { color: #84929a; font-size: 10px; }
+  .storage-mobile-bucket > select { min-width: 0; max-width: 245px; flex: 1; min-height: 32px; padding: 5px 8px; border: 1px solid #3b484b; border-radius: 5px; background: #262e31; color: #c5d1d7; font-size: 11px; }
+  .storage-mobile-bucket > button { margin-left: auto; width: 34px; height: 34px; }
+  .storage-toolbar .db-row-search { max-width: none; }
+  .storage-toolbar .db-button { min-height: 37px; }
+  .storage-toolbar { gap: 9px; padding: 11px 14px; }
+  .storage-file-table thead th:first-child { width: auto; }
+  .storage-file-name > span:last-child { max-width: 260px; }
+  .storage-file-actions .db-icon-button { width: 36px; height: 36px; }
+  .storage-toolbar-actions { gap: 8px; }
+  .storage-sidebar-usage { padding-bottom: 21px; }
+}
+@media (max-width: 510px) {
+  .storage-toolbar .db-row-search { min-width: calc(100% - 46px); }
+  .storage-toolbar-actions { width: 100%; justify-content: space-between; }
+  .storage-toolbar-actions .db-button { min-height: 36px; }
+  .storage-toolbar-actions .db-button-primary { min-width: 126px; }
+  .storage-file-date { display: none; }
+  .storage-file-table { table-layout: fixed; }
+  .storage-file-table thead th:first-child { width: auto; }
+  .storage-file-table thead th:nth-child(2) { width: 52px; }
+  .storage-file-table thead th:last-child { width: 83px; }
+  .storage-file-table td, .storage-file-table tbody th, .storage-file-table thead th { padding-inline: 9px; }
+  .storage-file-name { gap: 7px; }
+  .storage-file-icon { width: 23px; height: 28px; }
+  .storage-file-name > span:last-child { max-width: none; min-width: 0; font-size: 10px; }
+  .storage-file-size { font-size: 9px; }
+  .storage-file-actions { gap: 0; }
+  .storage-file-actions .db-icon-button { width: 32px; }
+  .storage-footer { flex-wrap: nowrap; gap: 5px; font-size: 9px; }
+  .storage-footer > span:last-child { font-size: 8px; }
+  .storage-notice { padding-inline: 12px; font-size: 10px; }
+  .storage-uploads li > small { font-size: 8px; }
+  .storage-dialog .db-dialog-body { padding: 23px 19px; }
+}

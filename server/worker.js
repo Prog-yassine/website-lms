@@ -37,6 +37,32 @@ const TABLES = Object.freeze({
   },
 });
 
+
+// SQLite has no PostgreSQL-style CREATE SCHEMA namespaces. These are read-only,
+// logical projections with independent allowlists, never arbitrary system tables.
+const AUTH_TABLES = Object.freeze({
+  users: {
+    name: "users",
+    description: "Your project owner account. Credential fields are never exposed.",
+    scopeColumn: "id",
+    columns: [column("id", "TEXT", false, true), column("name", "TEXT"), column("email", "TEXT"), column("created_at", "TEXT")],
+  },
+  sessions: {
+    name: "sessions",
+    description: "Your account session history. Expiry and revocation values are Unix timestamps in seconds.",
+    scopeColumn: "user_id",
+    columns: [column("id", "TEXT", false, true), column("user_id", "TEXT"), column("created_at", "TEXT"), column("updated_at", "TEXT"), column("expires_at", "INTEGER"), column("revoked_at", "INTEGER", true)],
+  },
+});
+
+function tableNamespace(request) {
+  const values = new URL(request.url).searchParams.getAll("schema");
+  if (values.length > 1) throw new ApiError(400, "Specify a single supported schema");
+  const schema = values.length ? values[0] : "main";
+  if (schema !== "main" && schema !== "auth") throw new ApiError(400, "Schema must be main or auth");
+  return { schema, tables: schema === "auth" ? AUTH_TABLES : TABLES };
+}
+
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
@@ -127,6 +153,7 @@ async function authenticate(request, env) {
       AND sessions.revoked_at IS NULL AND sessions.expires_at > ?
   `).bind(token.sid, token.sub, nowSeconds()).first();
   if (!record) throw new ApiError(401, "Session expired. Please sign in again");
+  await env.DB.prepare("UPDATE sessions SET updated_at = ? WHERE id = ? AND user_id = ? AND revoked_at IS NULL AND expires_at > ?").bind(new Date().toISOString(), token.sid, token.sub, nowSeconds()).run();
   return { user: publicUser(record), sessionId: token.sid };
 }
 
@@ -343,11 +370,16 @@ async function listProjects(env, userId) {
   return json({ projects: result.results.map(publicProject) });
 }
 
-async function listTables(env, projectId, userId) {
+async function listTables(request, env, projectId, userId) {
   await requireProject(env, projectId, userId);
-  const entries = Object.entries(TABLES);
-  const results = await env.DB.batch(entries.map(([id]) => env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${id}" WHERE project_id = ?`).bind(projectId)));
-  return json({ tables: entries.map(([id, definition], index) => ({ id, name: definition.name, schema: "main", rowCount: results[index].results[0].row_count, description: definition.description })) });
+  const { schema, tables } = tableNamespace(request);
+  const entries = Object.entries(tables);
+  const scopeValue = schema === "auth" ? userId : projectId;
+  const results = await env.DB.batch(entries.map(([id, definition]) => {
+    const scopeColumn = schema === "auth" ? definition.scopeColumn : "project_id";
+    return env.DB.prepare(`SELECT COUNT(*) AS row_count FROM "${id}" WHERE "${scopeColumn}" = ?`).bind(scopeValue);
+  }));
+  return json({ tables: entries.map(([id, definition], index) => ({ id, name: definition.name, schema, rowCount: results[index].results[0].row_count, description: definition.description })) });
 }
 
 function positiveInteger(value, fallback, max = Number.MAX_SAFE_INTEGER) {
@@ -361,15 +393,17 @@ function positiveInteger(value, fallback, max = Number.MAX_SAFE_INTEGER) {
 async function listRows(request, env, projectId, tableId, userId) {
   // Ownership is checked before exposing the allowlisted table metadata or executing data queries.
   await requireProject(env, projectId, userId);
-  if (!Object.hasOwn(TABLES, tableId)) throw new ApiError(404, "Table not found");
-  const definition = TABLES[tableId];
+  const { schema, tables } = tableNamespace(request);
+  if (!Object.hasOwn(tables, tableId)) throw new ApiError(404, "Table not found");
+  const definition = tables[tableId];
   const params = new URL(request.url).searchParams;
   const page = positiveInteger(params.get("page"), 1, 1000000);
   const pageSize = positiveInteger(params.get("pageSize"), 25, 100);
   const search = (params.get("search") || "").trim();
   if (search.length > 200) throw new ApiError(400, "Search must contain at most 200 characters");
-  const values = [projectId];
-  let where = "project_id = ?";
+  const values = [schema === "auth" ? userId : projectId];
+  const scopeColumn = schema === "auth" ? definition.scopeColumn : "project_id";
+  let where = `"${scopeColumn}" = ?`;
   if (search) {
     const pattern = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
     where += ` AND (${definition.columns.map(({ name }) => `CAST("${name}" AS TEXT) LIKE ? ESCAPE '\\' COLLATE NOCASE`).join(" OR ")})`;
@@ -382,8 +416,283 @@ async function listRows(request, env, projectId, tableId, userId) {
     env.DB.prepare(`SELECT ${select} FROM "${tableId}" WHERE ${where} ORDER BY id ASC LIMIT ? OFFSET ?`).bind(...values, pageSize, (page - 1) * pageSize),
   ]);
   const rowCount = results[0].results[0].row_count;
-  return json({ table: { id: tableId, name: definition.name, schema: "main" }, columns: definition.columns, rows: results[1].results, page, pageSize, rowCount, totalPages: Math.ceil(rowCount / pageSize) });
+  return json({ table: { id: tableId, name: definition.name, schema }, columns: definition.columns, rows: results[1].results, page, pageSize, rowCount, totalPages: Math.ceil(rowCount / pageSize) });
 }
+
+const STORAGE_LIMITS = Object.freeze({ maxFileBytes: 5 * 1024 * 1024, maxBuckets: 5, maxFilesPerBucket: 50 });
+const MAX_PROJECT_BYTES = 25 * 1024 * 1024;
+
+async function projectAuthOverview(env, user, currentSessionId) {
+  const [signIn, activeSessions] = await env.DB.batch([
+    env.DB.prepare("SELECT MAX(created_at) AS last_sign_in FROM sessions WHERE user_id = ?").bind(user.id),
+    env.DB.prepare("SELECT id, created_at, updated_at, expires_at FROM sessions WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ? ORDER BY created_at DESC, id ASC").bind(user.id, nowSeconds()),
+  ]);
+  return json({
+    users: [{ ...user, role: "owner", provider: "email", lastSignInAt: signIn.results[0]?.last_sign_in || null }],
+    sessions: activeSessions.results.map((session) => ({ id: session.id, createdAt: session.created_at, lastUsedAt: session.updated_at, expiresAt: new Date(session.expires_at * 1000).toISOString(), current: session.id === currentSessionId })),
+    providers: [{ id: "email", name: "Email and password", enabled: true }, { id: "google", name: "Google", enabled: false }, { id: "github", name: "GitHub", enabled: false }],
+    settings: { accessTokenSeconds: ACCESS_SECONDS, refreshTokenSeconds: REFRESH_SECONDS, passwordMinLength: 8 },
+  });
+}
+
+async function revokeProjectSession(env, userId, currentSessionId, sessionId) {
+  if (!UUID.test(sessionId)) throw new ApiError(404, "Session not found");
+  if (sessionId === currentSessionId) throw new ApiError(409, "Use Sign out to end your current session");
+  const result = await env.DB.prepare("UPDATE sessions SET revoked_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND revoked_at IS NULL AND expires_at > ?").bind(nowSeconds(), new Date().toISOString(), sessionId, userId, nowSeconds()).run();
+  if (result.meta.changes !== 1) throw new ApiError(404, "Session not found");
+  return json({ message: "Session revoked" });
+}
+
+function configuredStorage(env) {
+  return Boolean(env.BUCKET);
+}
+
+function requireStorage(env) {
+  if (!configuredStorage(env)) throw new ApiError(503, "File storage is temporarily unavailable");
+  return env.BUCKET;
+}
+
+function bucketValue(record) {
+  return { id: record.id, name: record.name, createdAt: record.created_at, fileCount: Number(record.file_count || 0), totalBytes: Number(record.total_bytes || 0) };
+}
+
+function objectValue(record) {
+  return { id: record.id, name: record.name, size: record.size, contentType: record.content_type, createdAt: record.created_at };
+}
+
+async function storageUsage(env, projectId) {
+  // Pending uploads retain their quota reservation until finalized or rolled back.
+  const record = await env.DB.prepare("SELECT COALESCE(SUM(size), 0) AS total_bytes FROM storage_objects WHERE project_id = ?").bind(projectId).first();
+  return { totalBytes: Number(record.total_bytes), maxTotalBytes: MAX_PROJECT_BYTES };
+}
+
+async function ownedBucket(env, projectId, bucketId) {
+  if (!UUID.test(bucketId)) throw new ApiError(404, "Bucket not found");
+  const record = await env.DB.prepare(`
+    SELECT storage_buckets.id, storage_buckets.name, storage_buckets.created_at,
+      COUNT(storage_objects.id) AS file_count, COALESCE(SUM(storage_objects.size), 0) AS total_bytes
+    FROM storage_buckets LEFT JOIN storage_objects
+      ON storage_objects.bucket_id = storage_buckets.id AND storage_objects.project_id = storage_buckets.project_id
+    WHERE storage_buckets.id = ? AND storage_buckets.project_id = ?
+    GROUP BY storage_buckets.id, storage_buckets.name, storage_buckets.created_at
+  `).bind(bucketId, projectId).first();
+  if (!record) throw new ApiError(404, "Bucket not found");
+  return record;
+}
+
+async function listStorageBuckets(env, projectId) {
+  const rows = await env.DB.prepare(`
+    SELECT storage_buckets.id, storage_buckets.name, storage_buckets.created_at,
+      COUNT(storage_objects.id) AS file_count, COALESCE(SUM(storage_objects.size), 0) AS total_bytes
+    FROM storage_buckets LEFT JOIN storage_objects
+      ON storage_objects.bucket_id = storage_buckets.id AND storage_objects.project_id = storage_buckets.project_id
+    WHERE storage_buckets.project_id = ?
+    GROUP BY storage_buckets.id, storage_buckets.name, storage_buckets.created_at
+    ORDER BY storage_buckets.created_at ASC, storage_buckets.id ASC
+  `).bind(projectId).all();
+  return json({ buckets: rows.results.map(bucketValue), usage: await storageUsage(env, projectId), limits: STORAGE_LIMITS, provider: "Cloudflare R2", configured: configuredStorage(env) });
+}
+
+async function createStorageBucket(request, env, projectId) {
+  requireStorage(env);
+  const body = await readJson(request);
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  if (name.length < 1 || name.length > 63 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(name)) throw new ApiError(400, "Bucket names must contain 1 to 63 lowercase letters, numbers, or hyphens, with a letter or number at each end");
+  const record = { id: crypto.randomUUID(), name, created_at: new Date().toISOString() };
+  let result;
+  try {
+    // The quota condition and insertion share one SQLite write statement.
+    result = await env.DB.prepare(`
+      INSERT INTO storage_buckets (id, project_id, name, created_at)
+      SELECT ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM storage_buckets WHERE project_id = ?) < ?
+    `).bind(record.id, projectId, name, record.created_at, projectId, STORAGE_LIMITS.maxBuckets).run();
+  } catch (error) {
+    if (/UNIQUE constraint failed: storage_buckets\./i.test(error.message || "")) throw new ApiError(409, "A bucket with this name already exists");
+    throw error;
+  }
+  if (result.meta.changes !== 1) throw new ApiError(409, "This project has reached its bucket limit");
+  return json({ bucket: bucketValue(record) }, 201);
+}
+
+async function deleteStorageBucket(env, projectId, bucketId) {
+  requireStorage(env);
+  await ownedBucket(env, projectId, bucketId);
+  const result = await env.DB.prepare(`
+    DELETE FROM storage_buckets WHERE id = ? AND project_id = ?
+      AND NOT EXISTS (SELECT 1 FROM storage_objects WHERE bucket_id = ? AND project_id = ?)
+  `).bind(bucketId, projectId, bucketId, projectId).run();
+  if (result.meta.changes !== 1) throw new ApiError(409, "Only empty buckets can be deleted. Wait for any uploads to finish");
+  return json({ message: "Bucket deleted" });
+}
+
+async function listStorageObjects(request, env, projectId, bucketId) {
+  const bucket = await ownedBucket(env, projectId, bucketId);
+  const search = (new URL(request.url).searchParams.get("search") || "").trim();
+  if (search.length > 200) throw new ApiError(400, "Search must contain at most 200 characters");
+  const pattern = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
+  const rows = await env.DB.prepare("SELECT id, name, size, content_type, created_at FROM storage_objects WHERE project_id = ? AND bucket_id = ? AND state = 'ready' AND name LIKE ? ESCAPE '\\' COLLATE NOCASE ORDER BY created_at DESC, id ASC").bind(projectId, bucketId, pattern).all();
+  return json({ bucket: bucketValue(bucket), objects: rows.results.map(objectValue), usage: await storageUsage(env, projectId), limits: STORAGE_LIMITS, configured: configuredStorage(env) });
+}
+
+function uploadName(request) {
+  const name = new URL(request.url).searchParams.get("filename");
+  if (!name || name !== name.trim() || name.length > 120 || name === "." || name === ".." || /[\/\\\x00-\x1f\x7f]/.test(name)) throw new ApiError(400, "Provide a filename of 1 to 120 characters without slashes or control characters");
+  return name;
+}
+
+async function readFileBytes(request) {
+  const declared = request.headers.get("Content-Length");
+  if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > STORAGE_LIMITS.maxFileBytes)) throw new ApiError(413, "Files must not exceed 5 MiB");
+  const reader = request.body?.getReader();
+  if (!reader) throw new ApiError(400, "Choose a non-empty file");
+  let size = 0;
+  const chunks = [];
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > STORAGE_LIMITS.maxFileBytes) {
+        await reader.cancel();
+        throw new ApiError(413, "Files must not exceed 5 MiB");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (size === 0) throw new ApiError(400, "Choose a non-empty file");
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+async function uploadStorageObject(request, env, projectId, bucketId) {
+  const provider = requireStorage(env);
+  await ownedBucket(env, projectId, bucketId);
+  const name = uploadName(request);
+  const contentType = (request.headers.get("Content-Type") || "application/octet-stream").split(";")[0].trim().toLowerCase();
+  if (contentType.length > 127 || !/^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/.test(contentType)) throw new ApiError(400, "Provide a valid file content type");
+  const bytes = await readFileBytes(request);
+  const record = { id: crypto.randomUUID(), name, size: bytes.byteLength, content_type: contentType, created_at: new Date().toISOString() };
+  const key = `projects/${projectId}/${bucketId}/${record.id}`;
+  // Counts include pending uploads. Concurrent requests cannot oversubscribe either quota.
+  const reservation = await env.DB.prepare(`
+    INSERT INTO storage_objects (id, project_id, bucket_id, object_key, name, size, content_type, state, created_at)
+    SELECT ?, ?, ?, ?, ?, ?, ?, 'uploading', ?
+    WHERE EXISTS (SELECT 1 FROM storage_buckets WHERE id = ? AND project_id = ?)
+      AND (SELECT COUNT(*) FROM storage_objects WHERE project_id = ? AND bucket_id = ?) < ?
+      AND (SELECT COALESCE(SUM(size), 0) FROM storage_objects WHERE project_id = ?) + ? <= ?
+  `).bind(record.id, projectId, bucketId, key, name, record.size, contentType, record.created_at, bucketId, projectId, projectId, bucketId, STORAGE_LIMITS.maxFilesPerBucket, projectId, record.size, MAX_PROJECT_BYTES).run();
+  if (reservation.meta.changes !== 1) {
+    await ownedBucket(env, projectId, bucketId);
+    const usage = await storageUsage(env, projectId);
+    if (usage.totalBytes + record.size > MAX_PROJECT_BYTES) throw new ApiError(507, "This project has reached its 25 MiB storage limit");
+    throw new ApiError(409, "This bucket has reached its file limit");
+  }
+  try {
+    const written = await provider.put(key, bytes, { httpMetadata: { contentType } });
+    if (!written) throw new Error("Object write was not confirmed");
+    const updated = await env.DB.prepare("UPDATE storage_objects SET state = 'ready' WHERE id = ? AND project_id = ? AND bucket_id = ? AND state = 'uploading'").bind(record.id, projectId, bucketId).run();
+    if (updated.meta.changes !== 1) throw new Error("Upload reservation no longer exists");
+  } catch {
+    try {
+      // R2 may have committed a put even when its response failed. Remove it first.
+      await provider.delete(key);
+      await env.DB.prepare("DELETE FROM storage_objects WHERE id = ? AND project_id = ? AND bucket_id = ?").bind(record.id, projectId, bucketId).run();
+    } catch {
+      // Retaining the reservation fails closed instead of hiding potentially billable bytes.
+      console.error("Storage upload cleanup requires a retry");
+    }
+    throw new ApiError(503, "The upload could not be completed. Please try again");
+  }
+  return json({ object: objectValue(record) }, 201);
+}
+
+async function storageObject(env, projectId, bucketId, objectId) {
+  await ownedBucket(env, projectId, bucketId);
+  if (!UUID.test(objectId)) throw new ApiError(404, "File not found");
+  const record = await env.DB.prepare("SELECT id, object_key, name, size, content_type, created_at FROM storage_objects WHERE id = ? AND project_id = ? AND bucket_id = ? AND state = 'ready'").bind(objectId, projectId, bucketId).first();
+  if (!record) throw new ApiError(404, "File not found");
+  return record;
+}
+
+async function downloadStorageObject(env, projectId, bucketId, objectId) {
+  const record = await storageObject(env, projectId, bucketId, objectId);
+  const provider = requireStorage(env);
+  let object;
+  try {
+    object = await provider.get(record.object_key);
+  } catch {
+    throw new ApiError(503, "The file could not be downloaded. Please try again");
+  }
+  if (!object) throw new ApiError(404, "File not found");
+  const fallback = record.name.replace(/[^\x20-\x7e]|["\\]/g, "_");
+  const filename = encodeURIComponent(record.name).replace(/['()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+  return new Response(object.body, { headers: {
+    "Content-Type": record.content_type,
+    "Content-Length": String(record.size),
+    "Content-Disposition": `attachment; filename="${fallback}"; filename*=UTF-8''${filename}`,
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "default-src 'none'; sandbox",
+    "X-Frame-Options": "DENY",
+  } });
+}
+
+async function deleteStorageObject(env, projectId, bucketId, objectId) {
+  const record = await storageObject(env, projectId, bucketId, objectId);
+  const provider = requireStorage(env);
+  try {
+    await provider.delete(record.object_key);
+  } catch {
+    throw new ApiError(503, "The file could not be deleted. Please try again");
+  }
+  await env.DB.prepare("DELETE FROM storage_objects WHERE id = ? AND project_id = ? AND bucket_id = ?").bind(objectId, projectId, bucketId).run();
+  return json({ message: "File deleted" });
+}
+
+function decodePathSegment(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    throw new ApiError(404, "Resource not found");
+  }
+}
+
+async function handleProjectSection(request, env, path) {
+  const authRoute = /^\/api\/projects\/([^/]+)\/auth(?:\/sessions\/([^/]+))?$/.exec(path);
+  const storageRoute = /^\/api\/projects\/([^/]+)\/storage\/buckets(?:\/([^/]+)(?:\/objects(?:\/([^/]+)(\/content)?)?)?)?$/.exec(path);
+  if (!authRoute && !storageRoute) return null;
+  const { user, sessionId } = await authenticate(request, env);
+  const projectId = decodePathSegment((authRoute || storageRoute)[1]);
+  // Every section lookup and mutation follows this project ownership check.
+  await requireProject(env, projectId, user.id);
+  if (request.method === "DELETE") await readJson(request, true);
+  if (authRoute) {
+    const targetSessionId = authRoute[2] && decodePathSegment(authRoute[2]);
+    if (request.method === "GET" && !targetSessionId) return projectAuthOverview(env, user, sessionId);
+    if (request.method === "DELETE" && targetSessionId) return revokeProjectSession(env, user.id, sessionId, targetSessionId);
+    throw new ApiError(404, "API route not found");
+  }
+  const bucketId = storageRoute[2] && decodePathSegment(storageRoute[2]);
+  const objectId = storageRoute[3] && decodePathSegment(storageRoute[3]);
+  const content = Boolean(storageRoute[4]);
+  const objectCollection = path.endsWith("/objects");
+  if (!bucketId && request.method === "GET") return listStorageBuckets(env, projectId);
+  if (!bucketId && request.method === "POST") return createStorageBucket(request, env, projectId);
+  if (bucketId && !objectId && objectCollection && request.method === "GET") return listStorageObjects(request, env, projectId, bucketId);
+  if (bucketId && !objectId && objectCollection && request.method === "POST") return uploadStorageObject(request, env, projectId, bucketId);
+  if (bucketId && !objectId && !objectCollection && request.method === "DELETE") return deleteStorageBucket(env, projectId, bucketId);
+  if (objectId && content && request.method === "GET") return downloadStorageObject(env, projectId, bucketId, objectId);
+  if (objectId && !content && request.method === "DELETE") return deleteStorageObject(env, projectId, bucketId, objectId);
+  throw new ApiError(404, "API route not found");
+}
+
 
 export async function handleApi(request, env) {
   try {
@@ -393,8 +702,11 @@ export async function handleApi(request, env) {
     if (!env.DB) throw new ApiError(503, "Service is temporarily unavailable");
     if (request.method === "OPTIONS") {
       assertOrigin(request);
-      return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": url.origin, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Vary": "Origin", "Cache-Control": "no-store" } });
+      return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": url.origin, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Vary": "Origin", "Cache-Control": "no-store" } });
     }
+    if (["POST", "DELETE", "PUT", "PATCH"].includes(request.method)) assertOrigin(request);
+    const sectionResponse = await handleProjectSection(request, env, path);
+    if (sectionResponse) return sectionResponse;
     if (request.method === "POST") {
       assertOrigin(request);
       if (path === "/api/auth/register") return await register(request, env);
@@ -423,7 +735,7 @@ export async function handleApi(request, env) {
         } catch {
           throw new ApiError(404, "Table or project not found");
         }
-        return tableId ? await listRows(request, env, projectId, tableId, user.id) : await listTables(env, projectId, user.id);
+        return tableId ? await listRows(request, env, projectId, tableId, user.id) : await listTables(request, env, projectId, user.id);
       }
     }
     throw new ApiError(404, "API route not found");

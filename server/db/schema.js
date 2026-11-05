@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, customType, foreignKey, index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { check, customType, foreignKey, index, integer, primaryKey, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 
 // Preserve the case-insensitive email column in the canonical SQLite schema.
 const caseInsensitiveText = customType({ dataType: () => "text COLLATE NOCASE" });
@@ -86,3 +86,35 @@ export const rateLimits = sqliteTable("rate_limits", {
   windowStart: integer("window_start").notNull(),
   requestCount: integer("request_count").notNull().default(0),
 }, (table) => [primaryKey({ columns: [table.bucketKey, table.windowStart] })]);
+
+
+export const storageBuckets = sqliteTable("storage_buckets", {
+  id: text("id"),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  createdAt: text("created_at").notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.id] }),
+  unique("storage_buckets_project_name_unique").on(table.projectId, table.name),
+  unique("storage_buckets_project_id_unique").on(table.projectId, table.id),
+  index("storage_buckets_project_id").on(table.projectId),
+]);
+
+export const storageObjects = sqliteTable("storage_objects", {
+  id: text("id"),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  bucketId: text("bucket_id").notNull(),
+  objectKey: text("object_key").notNull().unique(),
+  name: text("name").notNull(),
+  size: integer("size").notNull(),
+  contentType: text("content_type").notNull(),
+  state: text("state").notNull().default("uploading"),
+  createdAt: text("created_at").notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.id] }),
+  foreignKey({ columns: [table.projectId, table.bucketId], foreignColumns: [storageBuckets.projectId, storageBuckets.id] }).onDelete("cascade"),
+  index("storage_objects_project_bucket").on(table.projectId, table.bucketId),
+  index("storage_objects_project_state").on(table.projectId, table.state),
+  check("storage_objects_size_check", sql`${table.size} > 0 AND ${table.size} <= 5242880`),
+  check("storage_objects_state_check", sql`${table.state} IN ('uploading', 'ready')`),
+]);

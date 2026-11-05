@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import worker from '../dist/server/index.js';
 import { createLocalD1 } from './local-d1.mjs';
+import { createLocalR2 } from './local-r2.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 await mkdir(resolve(root, 'server/.local'), { recursive: true });
@@ -25,7 +26,11 @@ for (const migration of journal.entries) {
     }
   }
 }
-const env = { DB, JWT_SECRET: process.env.JWT_SECRET || randomBytes(48).toString('hex') };
+const env = {
+  DB,
+  BUCKET: createLocalR2(resolve(root, 'server/.local/objects')),
+  JWT_SECRET: process.env.JWT_SECRET || randomBytes(48).toString('hex'),
+};
 const port = Number(process.env.PORT || 8787);
 const server = createServer(async (incoming, outgoing) => {
   try {
@@ -38,7 +43,7 @@ const server = createServer(async (incoming, outgoing) => {
     let size = 0;
     for await (const chunk of incoming) {
       size += chunk.length;
-      if (size > 16 * 1024) { outgoing.writeHead(413).end('Request too large'); return; }
+      if (size > 5 * 1024 * 1024) { outgoing.writeHead(413).end('Request too large'); return; }
       chunks.push(chunk);
     }
     const request = new Request(`http://${host}${incoming.url}`, {
@@ -49,8 +54,9 @@ const server = createServer(async (incoming, outgoing) => {
     const headers = Object.fromEntries(response.headers);
     const cookies = response.headers.getSetCookie();
     if (cookies.length) headers['set-cookie'] = cookies;
+    const body = Buffer.from(await response.arrayBuffer());
     outgoing.writeHead(response.status, headers);
-    outgoing.end(Buffer.from(await response.arrayBuffer()));
+    outgoing.end(body);
   } catch (error) {
     console.error('Local server failed:', error.name);
     outgoing.writeHead(500).end('Local server error');

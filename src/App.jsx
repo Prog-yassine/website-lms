@@ -8,9 +8,12 @@ import Developer from './router/developer';
 import ComingSoon from './router/coming-soon';
 import NotFound from './router/not-found';
 import Dashboard from './router/dashboard';
+import Authentication from './router/authentication';
+import Storage from './router/storage';
+import DashboardLayout from './components/dashboard/DashboardLayout';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
-const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon', '/dashboard': 'Table editor', '/dashboard/database': 'Table editor' };
+const titles = { '/': 'Your app. Your way.', '/login': 'Sign in', '/register': 'Create your account', '/pricing': 'Pricing', '/devs': 'Built for developers', '/docs': 'Developer resources', '/coming-soon': 'Coming soon', '/dashboard': 'Table editor', '/dashboard/database': 'Table editor', '/dashboard/auth': 'Authentication', '/dashboard/storage': 'Storage' };
 
 function RouteEffects() {
   const { pathname, hash } = useLocation();
@@ -48,8 +51,12 @@ export function AppRoutes() {
       <Route path="/devs" element={<Developer />} />
       <Route path="/docs" element={<Developer />} />
       <Route path="/coming-soon" element={<ComingSoon />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/dashboard/database" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+        <Route index element={<Dashboard />} />
+        <Route path="database" element={<Dashboard />} />
+        <Route path="auth" element={<Authentication />} />
+        <Route path="storage" element={<Storage />} />
+      </Route>
       <Route path="/dashboard/*" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
